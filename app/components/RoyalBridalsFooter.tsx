@@ -9,15 +9,15 @@ import {
 export default function RoyalBridalsFooter() {
   return (
     <footer className="w-full bg-black text-white font-sans">
-      <div className="grid min-h-[460px] grid-cols-1 lg:grid-cols-[1.1fr_0.65fr_0.9fr_0.55fr]">
+      <div className="grid min-h-[300px] grid-cols-2 lg:min-h-[460px] lg:grid-cols-[1.1fr_0.65fr_0.9fr_0.55fr]">
         {/* Left newsletter panel */}
-        <div className="flex flex-col justify-between bg-gradient-to-r from-[#1a1a1d] to-[#242427] px-8 py-10 md:px-10 lg:px-10">
+        <div className="col-span-2 flex flex-col justify-between bg-gradient-to-r from-[#1a1a1d] to-[#242427] px-6 py-6 md:px-10 lg:col-span-1 lg:px-10 lg:py-10">
           <div className="max-w-[460px]">
-            <h2 className="text-[18px] font-bold uppercase leading-tight md:text-[20px]">
+            <h2 className="text-[16px] font-bold uppercase leading-tight md:text-[20px]">
               Stay Posted + Unlock Exclusive Offers
             </h2>
 
-            <p className="mt-3 text-[14px] leading-6 text-white/90">
+            <p className="mt-3 text-[12px] leading-6 text-white/90 md:text-[14px]">
               Keep up with all things Royal Bridals Uganda + save on your next
               order.
             </p>
@@ -34,7 +34,7 @@ export default function RoyalBridalsFooter() {
               </div>
             </div>
 
-            <p className="mt-5 max-w-[500px] text-[11px] leading-5 text-white/80">
+            <p className="mt-5 max-w-[500px] text-[10px] leading-5 text-white/80 md:text-[11px]">
               By subscribing to Royal Bridals Uganda, you agree to our Terms of
               Use and acknowledge our Privacy Policy and consent to receive a
               varying number of marketing messages via email and text. Consent
@@ -42,26 +42,26 @@ export default function RoyalBridalsFooter() {
             </p>
           </div>
 
-          <div className="mt-16">
-            <h3 className="text-[26px] font-medium uppercase tracking-[0.55em] text-white md:text-[30px]">
+          <div className="mt-10 md:mt-16">
+            <h3 className="text-[18px] font-medium uppercase tracking-[0.3em] text-white md:text-[30px] md:tracking-[0.55em]">
               Royal Bridals 
             </h3>
           </div>
         </div>
 
         {/* Customer service */}
-        <div className="px-8 py-10 md:px-10">
-          <h3 className="text-[18px] font-bold uppercase">Customer Service</h3>
+        <div className="px-6 py-6 md:px-10 lg:py-10">
+          <h3 className="text-[16px] font-bold uppercase md:text-[18px]">Customer Service</h3>
 
-          <p className="mt-4 max-w-[290px] text-[14px] leading-6 text-white/90">
+          <p className="mt-4 max-w-[290px] text-[12px] leading-6 text-white/90 md:text-[14px]">
             Operating hours are from 9am-6pm Monday-Friday and 9am-4pm
             Saturday. Reach out today!
           </p>
 
-          <p className="mt-3 text-[14px] text-white">info@royalbraids.ug</p>
-          <p className="mt-3 text-[14px] text-white">+256 793695678 / +256 730 247 868</p>
+          <p className="mt-3 text-[12px] text-white md:text-[14px]">info@royalbraids.ug</p>
+          <p className="mt-3 text-[12px] text-white md:text-[14px]">+256 793695678 / +256 730 247 868</p>
 
-          <div className="mt-6 space-y-4 text-[15px]">
+          <div className="mt-6 space-y-3 text-[13px] md:space-y-4 md:text-[15px]">
             <a href="#" className="block hover:text-white/70">
               Order Status
             </a>
@@ -102,16 +102,16 @@ export default function RoyalBridalsFooter() {
         </div>
 
         {/* About */}
-        <div className="px-8 py-10 md:px-10">
-          <h3 className="text-[18px] font-bold uppercase">About</h3>
+        <div className="px-6 py-6 md:px-10 lg:py-10">
+          <h3 className="text-[16px] font-bold uppercase md:text-[18px]">About</h3>
 
-          <p className="mt-4 max-w-[420px] text-[14px] leading-6 text-white/90">
+          <p className="mt-4 max-w-[420px] text-[12px] leading-6 text-white/90 md:text-[14px]">
             Royal Bridals Uganda is inspired by timeless elegance and modern
             bridal fashion, offering beautiful gowns, accessories, and styling
             pieces that make every bride feel confident, graceful, and radiant.
           </p>
 
-          <div className="mt-6 space-y-4 text-[15px]">
+          <div className="mt-6 space-y-3 text-[13px] md:space-y-4 md:text-[15px]">
             <a href="#" className="block hover:text-white/70">
               About the Brand
             </a>
@@ -128,11 +128,11 @@ export default function RoyalBridalsFooter() {
         </div>
 
         {/* Image */}
-        <div className="flex items-start justify-center px-8 py-10 md:px-10 lg:justify-end">
+        <div className="col-span-2 flex items-start justify-center px-6 py-6 md:px-10 lg:col-span-1 lg:justify-end lg:py-10">
           <img
             src="https://res.cloudinary.com/doh2vn9zn/image/upload/v1773691111/slider_3_v0fzgs.png"
             alt="Royal Bridals Uganda"
-            className="h-auto max-h-[300px] w-full max-w-[300px] object-contain"
+            className="h-auto max-h-[180px] w-full max-w-[180px] object-contain md:max-h-[300px] md:max-w-[300px]"
           />
         </div>
       </div>
