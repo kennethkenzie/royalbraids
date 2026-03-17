@@ -1,6 +1,10 @@
-import { Heart, ShoppingBag, User, Search } from "lucide-react";
+"use client";
+
+import { Heart, ShoppingBag, User, Search, Menu, X } from "lucide-react";
+import { useState } from "react";
 
 export default function FentyHeader() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navLinks = ["Closure", "Crochet Braid", "Weaves", "Braids", "Blog", "Contact Us", "Help"];
 
   return (
@@ -11,30 +15,39 @@ export default function FentyHeader() {
 
         {/* Main top row */}
         <div className="flex h-[62px] items-center justify-between border-b border-zinc-200 px-6 md:px-12 lg:px-20">
-          {/* Left */}
-          <div className="flex min-w-[180px] items-center gap-2 text-sm text-black">
-            <img 
-              src="https://flagcdn.com/ug.svg" 
-              alt="UG Flag" 
-              className="h-3 w-4.5 overflow-hidden rounded-[1px] object-cover"
-            />
-            <span className="font-medium">UG</span>
-            <span className="text-zinc-400">|</span>
-            <span className="font-medium">English</span>
+          {/* Left: Mobile Menu & Country */}
+          <div className="flex min-w-[120px] items-center gap-4 text-[12px] text-black md:min-w-[180px] md:text-sm">
+            <button 
+              className="hover:opacity-70 lg:hidden"
+              onClick={() => setIsMenuOpen(true)}
+              aria-label="Open menu"
+            >
+              <Menu className="h-5 w-5 stroke-[1.5]" />
+            </button>
+            <div className="hidden items-center gap-2 md:flex">
+              <img 
+                src="https://flagcdn.com/ug.svg" 
+                alt="UG Flag" 
+                className="h-3 w-4.5 overflow-hidden rounded-[1px] object-cover"
+              />
+              <span className="font-medium">UG</span>
+              <span className="hidden text-zinc-400 md:inline">|</span>
+              <span className="hidden font-medium md:inline">English</span>
+            </div>
           </div>
 
           {/* Center logo */}
           <div className="flex-1 text-center">
-            <h1 className="select-none text-[22px] font-semibold font-sans uppercase tracking-[0.55em] text-black md:text-[24px]">
+            <h1 className="select-none text-[16px] font-semibold font-sans uppercase tracking-[0.3em] text-black md:text-[24px] md:tracking-[0.55em]">
               ROYAL BRAIDS
             </h1>
           </div>
 
           {/* Right icons */}
-          <div className="flex min-w-[180px] items-center justify-end gap-4 text-sm text-black">
-            <button className="hidden items-center gap-1 hover:opacity-70 md:flex">
+          <div className="flex min-w-[120px] items-center justify-end gap-3 text-sm text-black md:min-w-[180px] md:gap-4">
+            <button className="flex items-center gap-1 hover:opacity-70">
               <User className="h-4 w-4 stroke-[1.6]" />
-              <span>Sign In</span>
+              <span className="hidden md:inline">Sign In</span>
             </button>
 
             <button className="hover:opacity-70" aria-label="Search">
@@ -51,8 +64,8 @@ export default function FentyHeader() {
           </div>
         </div>
 
-        {/* Navigation */}
-        <nav className="flex items-center justify-center gap-8 overflow-x-auto whitespace-nowrap px-6 py-4 text-[18px] font-light font-sans text-black md:gap-12">
+        {/* Desktop Navigation */}
+        <nav className="hidden items-center justify-center gap-12 border-b border-zinc-100 py-4 text-[18px] font-light font-sans text-black lg:flex">
           {navLinks.map((item) => (
             <a
               key={item}
@@ -63,6 +76,38 @@ export default function FentyHeader() {
             </a>
           ))}
         </nav>
+      </div>
+
+      {/* Mobile Menu Overlay */}
+      <div 
+        className={`fixed inset-0 z-[100] transform transition-transform duration-300 ease-in-out ${
+          isMenuOpen ? "translate-x-0" : "-translate-x-full"
+        } lg:hidden`}
+      >
+        <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsMenuOpen(false)} />
+        <div className="relative flex h-full w-[80%] max-w-[320px] flex-col bg-white p-8">
+          <div className="flex items-center justify-between mb-10">
+            <h2 className="text-[18px] font-semibold font-sans uppercase tracking-widest text-black">Menu</h2>
+            <button onClick={() => setIsMenuOpen(false)} aria-label="Close menu">
+              <X className="h-6 w-6 text-black stroke-[1.5]" />
+            </button>
+          </div>
+          <nav className="flex flex-col gap-6 text-[20px] font-light font-sans text-black">
+            {navLinks.map((item) => (
+              <a
+                key={item}
+                href="#"
+                className="transition hover:opacity-60"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                {item}
+              </a>
+            ))}
+          </nav>
+          <div className="mt-auto pt-8 border-t border-zinc-100 italic text-[14px] text-zinc-500">
+            Experience the Royal touch.
+          </div>
+        </div>
       </div>
     </header>
   );
