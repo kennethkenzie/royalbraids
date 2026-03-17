@@ -99,7 +99,7 @@ export default function HeroCarousel() {
   }, []);
 
   return (
-    <section className="relative h-[600px] w-full overflow-hidden bg-white font-sans lg:h-[800px]">
+    <section className="relative h-[250px] w-full overflow-hidden bg-white font-sans md:h-[600px] lg:h-[800px]">
       <div className="relative h-full w-full">
         {slides.map((slide, index) => (
           <div
@@ -110,38 +110,40 @@ export default function HeroCarousel() {
                 : "pointer-events-none z-0 opacity-0"
             }`}
           >
-            <div className="relative z-20 mx-auto flex h-full max-w-[1400px] items-center px-6 md:px-10 lg:px-16">
-              <div className="grid w-full items-center gap-8 lg:grid-cols-2 lg:gap-20">
+            <div className="relative z-20 mx-auto h-full max-w-[1400px] px-4 md:px-10 lg:px-16">
+              <div className="grid h-full w-full grid-cols-2 items-center gap-4 md:gap-12 lg:gap-20">
                 {/* Left: Text Content */}
-                <div className="text-center lg:text-left">
-                  <p className="mb-4 text-[10px] font-medium uppercase tracking-[0.4em] text-zinc-500 md:mb-6 md:text-[12px]">
+                <div className="flex flex-col justify-center py-4 text-left">
+                  <p className="mb-1 text-[8px] font-medium uppercase tracking-[0.3em] text-zinc-500 md:mb-6 md:text-[12px] md:tracking-[0.4em]">
                     {slide.eyebrow}
                   </p>
 
-                  <h1 className="whitespace-pre-line text-[28px] font-bold uppercase leading-[1.1] tracking-tight text-black md:text-[56px] lg:text-[72px]">
+                  <h1 className="whitespace-pre-line text-[20px] font-bold uppercase leading-[1.1] tracking-tight text-black md:text-[48px] lg:text-[72px]">
                     {slide.title}
                   </h1>
 
-                  <p className="mt-4 text-[14px] leading-relaxed text-zinc-600 md:mt-8 md:text-[18px] lg:max-w-[480px]">
+                  <p className="mt-1 text-[10px] leading-relaxed text-zinc-600 md:mt-8 md:text-[16px] lg:max-w-[480px] lg:text-[18px]">
                     {slide.description}
                   </p>
 
-                  <button className="mt-6 inline-flex h-[48px] items-center justify-center bg-black px-8 text-[12px] font-bold uppercase tracking-widest text-white transition hover:bg-zinc-800 md:mt-10 md:h-[56px] md:px-12 md:text-[14px]">
-                    {slide.button}
-                  </button>
+                  <div>
+                    <button className="mt-3 inline-flex h-[32px] items-center justify-center bg-black px-4 text-[9px] font-bold uppercase tracking-widest text-white transition hover:bg-zinc-800 md:mt-10 md:h-[56px] md:px-12 md:text-[14px]">
+                      {slide.button}
+                    </button>
+                  </div>
                 </div>
 
                 {/* Right: Image */}
-                <div className="flex h-full items-end justify-center lg:justify-end lg:pr-10">
-                  <div className="relative h-[300px] w-full md:h-[500px] lg:h-[750px] xl:h-[800px]">
+                <div className="flex h-full items-end justify-end md:pr-4 lg:pr-10">
+                  <div className="relative h-full w-full max-h-[250px] md:max-h-[500px] lg:max-h-[750px] xl:max-h-[800px]">
                     <Image
                       src={slide.image}
                       alt={slide.title.replace(/\n/g, " ")}
                       fill
                       priority={index === 0}
                       unoptimized
-                      className="object-contain object-bottom scale-105 md:scale-110 origin-bottom"
-                      sizes="(max-width: 1024px) 100vw, 60vw"
+                      className="object-contain object-bottom scale-100 md:scale-110 origin-bottom"
+                      sizes="(max-width: 768px) 50vw, 50vw"
                     />
                   </div>
                 </div>
