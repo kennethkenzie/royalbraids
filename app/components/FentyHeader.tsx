@@ -2,6 +2,7 @@
 
 import { Heart, ShoppingBag, User, Search, Menu, X } from "lucide-react";
 import { useState } from "react";
+import { cloudinaryImages } from "@/lib/cloudinary";
 
 export default function FentyHeader() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -16,7 +17,7 @@ export default function FentyHeader() {
         {/* Main top row */}
         <div className="flex h-[62px] items-center justify-between border-b border-zinc-200 px-6 md:px-12 lg:px-20">
           {/* Left: Mobile Menu & Country */}
-          <div className="flex min-w-[120px] items-center gap-4 text-[12px] text-black md:min-w-[180px] md:text-sm">
+          <div className="flex min-w-[80px] items-center gap-4 text-[12px] text-black md:min-w-[180px] md:text-sm">
             <button 
               className="hover:opacity-70 lg:hidden"
               onClick={() => setIsMenuOpen(true)}
@@ -26,7 +27,7 @@ export default function FentyHeader() {
             </button>
             <div className="hidden items-center gap-2 md:flex">
               <img 
-                src="https://flagcdn.com/ug.svg" 
+                src={cloudinaryImages.ugFlag} 
                 alt="UG Flag" 
                 className="h-3 w-4.5 overflow-hidden rounded-[1px] object-cover"
               />
@@ -38,13 +39,13 @@ export default function FentyHeader() {
 
           {/* Center logo */}
           <div className="flex-1 text-center">
-            <h1 className="select-none text-[16px] font-semibold font-sans uppercase tracking-[0.3em] text-black md:text-[24px] md:tracking-[0.55em]">
+            <h1 className="select-none text-[13px] font-semibold font-sans uppercase tracking-[0.2em] text-black md:text-[24px] md:tracking-[0.55em] whitespace-nowrap">
               ROYAL BRAIDS
             </h1>
           </div>
 
           {/* Right icons */}
-          <div className="flex min-w-[120px] items-center justify-end gap-3 text-sm text-black md:min-w-[180px] md:gap-4">
+          <div className="flex min-w-[80px] items-center justify-end gap-3 text-sm text-black md:min-w-[180px] md:gap-4">
             <button className="flex items-center gap-1 hover:opacity-70">
               <User className="h-4 w-4 stroke-[1.6]" />
               <span className="hidden md:inline">Sign In</span>

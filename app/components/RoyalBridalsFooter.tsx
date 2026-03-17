@@ -5,6 +5,7 @@ import {
   Twitter,
   Youtube,
 } from "lucide-react";
+import { cloudinaryImages } from "@/lib/cloudinary";
 
 export default function RoyalBridalsFooter() {
   return (
@@ -130,7 +131,7 @@ export default function RoyalBridalsFooter() {
         {/* Image */}
         <div className="col-span-2 flex items-start justify-center px-6 py-6 md:px-10 lg:col-span-1 lg:justify-end lg:py-10">
           <img
-            src="https://res.cloudinary.com/doh2vn9zn/image/upload/v1773691111/slider_3_v0fzgs.png"
+            src={cloudinaryImages.footerFeature}
             alt="Royal Bridals Uganda"
             className="h-auto max-h-[180px] w-full max-w-[180px] object-contain md:max-h-[300px] md:max-w-[300px]"
           />

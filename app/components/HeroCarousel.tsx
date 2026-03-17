@@ -3,12 +3,12 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { cloudinaryImages } from "@/lib/cloudinary";
 
 const slides = [
   {
     id: 5,
-    image:
-      "https://res.cloudinary.com/doh2vn9zn/image/upload/v1773692504/new1_m8z7aj.png",
+    image: cloudinaryImages.heroSlideOne,
     eyebrow: "EXCLUSIVE",
     title: "SIGNATURE\nBRAIDING\nSTYLES",
     description:
@@ -19,8 +19,7 @@ const slides = [
   },
   {
     id: 4,
-    image:
-      "https://res.cloudinary.com/doh2vn9zn/image/upload/v1773693574/new3_liydsg.png",
+    image: cloudinaryImages.heroSlideTwo,
     eyebrow: "WHAT'S NEW",
     title: "DISCOVER\nOUR NEW\nCOLLECTION",
     description:

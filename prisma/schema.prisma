@@ -1,0 +1,66 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Category {
+  id        Int       @id @default(autoincrement())
+  name      String
+  slug      String    @unique
+  products  Product[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Color {
+  id        Int       @id @default(autoincrement())
+  name      String
+  hex       String    @unique
+  code      String?
+  products  Product[] @relation("ProductColors")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Product {
+  id           Int         @id @default(autoincrement())
+  name         String
+  slug         String      @unique
+  description  String?
+  priceInCents Int
+  stock        Int         @default(0)
+  status       String      @default("Active")
+  image        String?
+  categoryId   Int
+  category     Category    @relation(fields: [categoryId], references: [id])
+  colors       Color[]     @relation("ProductColors")
+  variations   Variation[]
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+}
+
+model Variation {
+  id        Int      @id @default(autoincrement())
+  type      String   // e.g. Length, Texture
+  value     String   // e.g. 24 inch, Silky
+  productId Int
+  product   Product  @relation(fields: [productId], references: [id])
+}
+
+model SizeGuide {
+  id        Int      @id @default(autoincrement())
+  type      String   // e.g. Braids, Weaves
+  packs     String?  // e.g. 3-5 packs
+  sizes     Size[]
+}
+
+model Size {
+  id          Int       @id @default(autoincrement())
+  label       String    // e.g. Shoulder (12")
+  sizeGuideId Int
+  sizeGuide   SizeGuide @relation(fields: [sizeGuideId], references: [id])
+}

@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import FentyHeader from "./components/FentyHeader";
-import RoyalBridalsFooter from "./components/RoyalBridalsFooter";
 
 const jost = localFont({
   src: [
@@ -61,9 +59,7 @@ export default function RootLayout({
         className={`${jost.variable} font-sans antialiased`}
         suppressHydrationWarning
       >
-        <FentyHeader />
         {children}
-        <RoyalBridalsFooter />
       </body>
     </html>
   );
