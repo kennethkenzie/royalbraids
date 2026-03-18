@@ -1,5 +1,10 @@
 import ProductEditorForm from "@/app/components/ProductEditorForm";
+import prisma from "@/lib/prisma";
 
-export default function AddProductPage() {
-  return <ProductEditorForm mode="create" />;
+export default async function AddProductPage() {
+  const units = await prisma.unit.findMany({
+    orderBy: { name: "asc" },
+  });
+
+  return <ProductEditorForm mode="create" units={units} />;
 }

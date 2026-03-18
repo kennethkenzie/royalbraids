@@ -6,10 +6,11 @@ import {
   Edit,
   Trash2,
   EyeOff,
+  Eye,
 } from "lucide-react";
 import prisma from "@/lib/prisma";
 import Link from "next/link";
-import { deleteProduct, unpublishProduct } from "@/lib/actions";
+import { deleteProduct, unpublishProduct, publishProduct } from "@/lib/actions";
 
 async function getProducts() {
   return await prisma.product.findMany({
@@ -127,7 +128,7 @@ export default async function ProductsPage() {
                     </td>
                     <td className="px-6 py-4">
                       <span className={`text-[13px] ${product.stock === 0 ? "text-red-500 font-medium" : "text-zinc-500"}`}>
-                        {product.stock === 0 ? "Out of Stock" : `${product.stock} units`}
+                        {product.stock === 0 ? "Out of Stock" : `${product.stock} ${product.unit.toLowerCase()}${product.stock === 1 ? "" : "s"}`}
                       </span>
                     </td>
                     <td className="px-6 py-4">
@@ -148,16 +149,27 @@ export default async function ProductsPage() {
                         >
                           <Edit className="h-4 w-4" />
                         </Link>
-                        <form action={unpublishProduct.bind(null, product.id)}>
-                          <button
-                            type="submit"
-                            disabled={product.status !== "Active"}
-                            className="p-2 text-zinc-400 transition-colors hover:text-amber-600 disabled:cursor-not-allowed disabled:opacity-40"
-                            title="Unpublish product"
-                          >
-                            <EyeOff className="h-4 w-4" />
-                          </button>
-                        </form>
+                        {product.status === "Active" ? (
+                          <form action={unpublishProduct.bind(null, product.id)}>
+                            <button
+                              type="submit"
+                              className="p-2 text-zinc-400 transition-colors hover:text-amber-600"
+                              title="Unpublish product"
+                            >
+                              <EyeOff className="h-4 w-4" />
+                            </button>
+                          </form>
+                        ) : (
+                          <form action={publishProduct.bind(null, product.id)}>
+                            <button
+                              type="submit"
+                              className="p-2 text-zinc-400 transition-colors hover:text-emerald-600"
+                              title={product.status === "Draft" ? "Publish product" : "Re-publish product"}
+                            >
+                              <Eye className="h-4 w-4" />
+                            </button>
+                          </form>
+                        )}
                         <form action={deleteProduct.bind(null, product.id)}>
                           <button
                             type="submit"

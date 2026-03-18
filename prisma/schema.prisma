@@ -8,12 +8,14 @@ datasource db {
 }
 
 model Category {
-  id        Int       @id @default(autoincrement())
-  name      String
-  slug      String    @unique
-  products  Product[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id         Int       @id @default(autoincrement())
+  name       String
+  slug       String    @unique
+  banner     String?
+  isFeatured Boolean   @default(false)
+  products   Product[]
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 }
 
 model Color {
@@ -33,6 +35,7 @@ model Product {
   description  String?
   priceInCents Int
   stock        Int         @default(0)
+  unit         String      @default("Piece")
   status       String      @default("Active")
   image        String?
   categoryId   Int
@@ -63,4 +66,12 @@ model Size {
   label       String    // e.g. Shoulder (12")
   sizeGuideId Int
   sizeGuide   SizeGuide @relation(fields: [sizeGuideId], references: [id])
+}
+
+model Unit {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  usage     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

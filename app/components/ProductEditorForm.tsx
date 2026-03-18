@@ -30,6 +30,7 @@ type ProductFormData = {
   price: string;
   stock: string;
   category: string;
+  unit: string;
   status?: string;
   variations: Array<{ id: number; name: string; value: string }>;
   selectedColors: number[];
@@ -39,6 +40,7 @@ type ProductFormData = {
 type ProductEditorFormProps = {
   mode: "create" | "edit";
   initialData?: ProductFormData;
+  units?: Array<{ id: number; name: string }>;
 };
 
 const defaultProduct: ProductFormData = {
@@ -47,6 +49,7 @@ const defaultProduct: ProductFormData = {
   price: "",
   stock: "",
   category: "Braids",
+  unit: "Piece",
   status: "Active",
   variations: [{ id: 1, name: "Length", value: "24 inch" }],
   selectedColors: [1],
@@ -56,6 +59,7 @@ const defaultProduct: ProductFormData = {
 export default function ProductEditorForm({
   mode,
   initialData,
+  units = [],
 }: ProductEditorFormProps) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -66,7 +70,8 @@ export default function ProductEditorForm({
   const [price, setPrice] = useState(product.price);
   const [stock, setStock] = useState(product.stock);
   const [category, setCategory] = useState(product.category);
-  const [status] = useState(product.status || "Active");
+  const [unit, setUnit] = useState(product.unit);
+  const [status, setStatus] = useState(product.status || "Active");
   const [variations, setVariations] = useState(product.variations);
   const [selectedColors, setSelectedColors] = useState<number[]>(
     product.selectedColors
@@ -183,6 +188,7 @@ export default function ProductEditorForm({
       price: Math.round(parseFloat(price || "0") * 100),
       stock,
       category,
+      unit,
       colors: availableColors.filter((color) => selectedColors.includes(color.id)),
       variations: variations.map((variation) => ({
         name: variation.name,
@@ -303,6 +309,21 @@ export default function ProductEditorForm({
                   className="w-full resize-none rounded-xl border border-transparent bg-zinc-50 p-4 text-[14px] outline-none transition-all focus:border-black/10 focus:bg-white"
                 />
               </div>
+              <div>
+                <label className="mb-2 block font-sans text-[13px] font-medium uppercase tracking-widest text-zinc-700">
+                  Category
+                </label>
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  className="h-11 w-full appearance-none rounded-xl border border-transparent bg-zinc-50 px-4 text-[14px] outline-none transition-all focus:border-black/10 focus:bg-white"
+                >
+                  <option>Braids</option>
+                  <option>Crochet</option>
+                  <option>Weaves</option>
+                  <option>Closure</option>
+                </select>
+              </div>
             </div>
           </div>
 
@@ -378,7 +399,7 @@ export default function ProductEditorForm({
             <h3 className="mb-6 text-[16px] font-bold text-black">
               Pricing & Stock
             </h3>
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-4 sm:grid-cols-3">
               <div>
                 <label className="mb-2 block text-[13px] font-medium text-zinc-700">
                   Base Price (UGX)
@@ -402,6 +423,32 @@ export default function ProductEditorForm({
                   placeholder="0"
                   className="h-11 w-full rounded-xl border border-transparent bg-zinc-50 px-4 text-[14px] outline-none transition-all focus:border-black/10 focus:bg-white"
                 />
+              </div>
+              <div>
+                <div className="mb-2 flex items-center justify-between gap-3">
+                  <label className="block text-[13px] font-medium text-zinc-700">
+                    Unit
+                  </label>
+                  <Link
+                    href="/dashboard/products/units"
+                    className="text-[12px] font-medium text-black underline underline-offset-4 hover:opacity-70"
+                  >
+                    Add Unit
+                  </Link>
+                </div>
+                <select
+                  value={unit}
+                  onChange={(e) => setUnit(e.target.value)}
+                  className="h-11 w-full appearance-none rounded-xl border border-transparent bg-zinc-50 px-4 text-[14px] outline-none transition-all focus:border-black/10 focus:bg-white"
+                >
+                  {(units.length > 0
+                    ? units
+                    : [{ id: 0, name: "Piece" }]).map((unitOption) => (
+                    <option key={unitOption.id} value={unitOption.name}>
+                      {unitOption.name}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
           </div>
@@ -513,29 +560,21 @@ export default function ProductEditorForm({
             <div className="space-y-4">
               <div>
                 <label className="mb-2 block text-[13px] font-medium text-zinc-700">
-                  Category
-                </label>
-                <select
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  className="h-11 w-full appearance-none rounded-xl border border-transparent bg-zinc-50 px-4 text-[14px] outline-none transition-all focus:border-black/10 focus:bg-white"
-                >
-                  <option>Braids</option>
-                  <option>Crochet</option>
-                  <option>Weaves</option>
-                  <option>Closure</option>
-                </select>
-              </div>
-              <div>
-                <label className="mb-2 block text-[13px] font-medium text-zinc-700">
                   Status
                 </label>
-                <div className="flex items-center gap-2 px-1">
-                  <div className="h-2 w-2 rounded-full bg-emerald-500" />
-                  <span className="text-[13px] text-zinc-600">
-                    {status}
-                  </span>
-                </div>
+                <select
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value)}
+                  className="h-11 w-full appearance-none rounded-xl border border-transparent bg-zinc-50 px-4 text-[14px] outline-none transition-all focus:border-black/10 focus:bg-white"
+                >
+                  <option value="Active">Published (Active)</option>
+                  <option value="Draft">Unpublished (Draft)</option>
+                </select>
+                <p className="mt-2 px-1 text-[11px] text-zinc-400">
+                  {status === "Active" 
+                    ? "This product will be visible to customers." 
+                    : "This product will be hidden from the store."}
+                </p>
               </div>
             </div>
           </div>

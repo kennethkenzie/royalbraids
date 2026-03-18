@@ -20,7 +20,8 @@ import {
   Percent,
   Plus,
   Palette,
-  Ruler
+  Ruler,
+  Boxes
 } from "lucide-react";
 
 interface DashboardSidebarProps {
@@ -42,6 +43,7 @@ const navItems = [
       { name: "Category Based Discount", href: "/dashboard/products/discount", icon: Percent },
       { name: "Attribute", href: "/dashboard/products/attribute", icon: Plus },
       { name: "Colors", href: "/dashboard/products/colors", icon: Palette },
+      { name: "Units", href: "/dashboard/products/units", icon: Boxes },
       { name: "Size Guide", href: "/dashboard/products/size-guide", icon: Ruler },
     ]
   },

@@ -81,7 +81,7 @@ export default async function LatestProductsSection() {
             {products.map((product) => (
               <Link
                 key={product.id}
-                href="/products"
+                href={`/products/${product.slug}`}
                 className="cursor-default snap-start shrink-0 basis-[280px] sm:basis-[320px] xl:basis-[360px] group"
               >
                 <article>

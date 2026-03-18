@@ -3,59 +3,90 @@
 import prisma from "./prisma";
 import { revalidatePath } from "next/cache";
 
-type ProductPayload = {
-  id?: number;
-  name: string;
-  description?: string;
-  price: number | string;
-  stock: number | string;
-  category: string;
-  colors: Array<{ name: string; hex: string }>;
-  variations: Array<{ name: string; value: string }>;
-  status?: string;
-  image?: string;
-};
+export async function createProduct(formData: any) {
+  try {
+    const { name, description, price, stock, category, unit, colors, variations, status, image } = formData;
 
-function buildSlug(name: string) {
-  return name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
+    // Basic slug generation
+    const slug = name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
 
-async function getCategoryId(category: string) {
-  const categorySlug = category.toLowerCase().replace(/ /g, "-");
+    // Ensure category exists or connect
+    const categoryRecord = await prisma.category.upsert({
+      where: { slug: category.toLowerCase().replace(/ /g, "-") },
+      update: {},
+      create: {
+        name: category,
+        slug: category.toLowerCase().replace(/ /g, "-"),
+      },
+    });
 
-  const categoryRecord = await prisma.category.upsert({
-    where: { slug: categorySlug },
-    update: {},
-    create: {
-      name: category,
-      slug: categorySlug,
-    },
-  });
+    // Handle colors - ensure they exist
+    const colorConnections = await Promise.all(
+      colors.map(async (c: { name: string; hex: string }) => {
+        return await prisma.color.upsert({
+          where: { hex: c.hex },
+          update: {},
+          create: {
+            name: c.name,
+            hex: c.hex,
+          },
+        });
+      })
+    );
 
-  return categoryRecord.id;
-}
+    // Check for slug uniqueness before creating
+    const existingProduct = await prisma.product.findUnique({
+      where: { slug },
+    });
 
-async function getColorConnections(colors: Array<{ name: string; hex: string }>) {
-  return Promise.all(
-    colors.map(async (color) => {
-      return prisma.color.upsert({
-        where: { hex: color.hex },
-        update: {
-          name: color.name,
+    if (existingProduct) {
+      return { success: false, error: `A product with the name "${name}" already exists. Please choose a different name.` };
+    }
+
+    // Create the product
+    const product = await prisma.product.create({
+      data: {
+        name,
+        slug,
+        description,
+        priceInCents: parseInt(price), 
+        stock: parseInt(stock),
+        unit: unit || "Piece",
+        status: status || "Active",
+        image,
+        categoryId: categoryRecord.id,
+        colors: {
+          connect: colorConnections.map((c) => ({ id: c.id })),
         },
-        create: {
-          name: color.name,
-          hex: color.hex,
+        variations: {
+          create: variations.map((v: { name: string; value: string }) => ({
+            type: v.name,
+            value: v.value,
+          })),
         },
-      });
-    })
-  );
+      },
+    });
+
+    revalidatePath("/dashboard/products");
+    return { success: true, product };
+  } catch (error: any) {
+    console.error("PRISMA ERROR:", error);
+    
+    let errorMessage = "Something went wrong while publishing the product.";
+    if (error.code === 'P2002') {
+      errorMessage = "A product with this name (or slug) already exists.";
+    } else if (error.message) {
+      errorMessage = `Error: ${error.message.split('\n')[0]}`;
+    }
+
+    return { success: false, error: errorMessage };
+  }
 }
 
-async function saveProduct(payload: ProductPayload, mode: "create" | "update") {
+export async function updateProduct(formData: any) {
   try {
     const {
       id,
@@ -64,87 +95,90 @@ async function saveProduct(payload: ProductPayload, mode: "create" | "update") {
       price,
       stock,
       category,
+      unit,
       colors,
       variations,
       status,
       image,
-    } = payload;
+    } = formData;
 
-    const slug = buildSlug(name);
-    const categoryId = await getCategoryId(category);
-    const colorConnections = await getColorConnections(colors);
+    if (!id) {
+      return { success: false, error: "Product id is required." };
+    }
 
-    const existingProduct = await prisma.product.findUnique({ where: { slug } });
-    if (
-      existingProduct &&
-      (mode === "create" || existingProduct.id !== id)
-    ) {
+    const slug = name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+
+    const categoryRecord = await prisma.category.upsert({
+      where: { slug: category.toLowerCase().replace(/ /g, "-") },
+      update: {},
+      create: {
+        name: category,
+        slug: category.toLowerCase().replace(/ /g, "-"),
+      },
+    });
+
+    const colorConnections = await Promise.all(
+      colors.map(async (c: { name: string; hex: string }) => {
+        return prisma.color.upsert({
+          where: { hex: c.hex },
+          update: {
+            name: c.name,
+          },
+          create: {
+            name: c.name,
+            hex: c.hex,
+          },
+        });
+      })
+    );
+
+    const existingProduct = await prisma.product.findUnique({
+      where: { slug },
+    });
+
+    if (existingProduct && existingProduct.id !== id) {
       return {
         success: false,
         error: `A product with the name "${name}" already exists. Please choose a different name.`,
       };
     }
 
-    const baseProductData = {
-      name,
-      slug,
-      description,
-      priceInCents: parseInt(String(price), 10),
-      stock: parseInt(String(stock), 10),
-      status: status || "Active",
-      image,
-      categoryId,
-    };
-
-    const product =
-      mode === "create"
-        ? await prisma.product.create({
-            data: {
-              ...baseProductData,
-              colors: {
-                connect: colorConnections.map((color) => ({ id: color.id })),
-              },
-              variations: {
-                create: variations.map((variation) => ({
-                  type: variation.name,
-                  value: variation.value,
-                })),
-              },
-            },
-          })
-        : await prisma.product.update({
-            where: { id },
-            data: {
-              ...baseProductData,
-              colors: {
-                set: colorConnections.map((color) => ({ id: color.id })),
-              },
-              variations: {
-                deleteMany: {},
-                create: variations.map((variation) => ({
-                  type: variation.name,
-                  value: variation.value,
-                })),
-              },
-            },
-          });
+    const product = await prisma.product.update({
+      where: { id },
+      data: {
+        name,
+        slug,
+        description,
+        priceInCents: parseInt(price),
+        stock: parseInt(stock),
+        unit: unit || "Piece",
+        status: status || "Active",
+        image,
+        categoryId: categoryRecord.id,
+        colors: {
+          set: colorConnections.map((c) => ({ id: c.id })),
+        },
+        variations: {
+          deleteMany: {},
+          create: variations.map((v: { name: string; value: string }) => ({
+            type: v.name,
+            value: v.value,
+          })),
+        },
+      },
+    });
 
     revalidatePath("/dashboard/products");
-    if (id) {
-      revalidatePath(`/dashboard/products/${id}/edit`);
-    }
     revalidatePath("/");
     revalidatePath("/products");
-
     return { success: true, product };
   } catch (error: any) {
     console.error("PRISMA ERROR:", error);
 
-    let errorMessage =
-      mode === "create"
-        ? "Something went wrong while publishing the product."
-        : "Something went wrong while updating the product.";
-
+    let errorMessage = "Something went wrong while updating the product.";
     if (error.code === "P2002") {
       errorMessage = "A product with this name (or slug) already exists.";
     } else if (error.message) {
@@ -155,51 +189,244 @@ async function saveProduct(payload: ProductPayload, mode: "create" | "update") {
   }
 }
 
-export async function createProduct(formData: ProductPayload) {
-  return saveProduct(formData, "create");
-}
-
-export async function updateProduct(formData: ProductPayload) {
-  return saveProduct(formData, "update");
+export async function deleteProduct(id: number) {
+  try {
+    await prisma.product.delete({ where: { id } });
+    revalidatePath("/dashboard/products");
+  } catch (error: any) {
+    throw new Error(error?.message || "Failed to delete product.");
+  }
 }
 
 export async function unpublishProduct(id: number) {
   try {
     await prisma.product.update({
       where: { id },
-      data: {
-        status: "Draft",
-      },
+      data: { status: "Draft" },
     });
-
     revalidatePath("/dashboard/products");
     revalidatePath("/");
     revalidatePath("/products");
+    revalidatePath("/inventory");
   } catch (error: any) {
-    console.error("PRISMA ERROR:", error);
-    throw new Error(
-      error?.message
-        ? `Error: ${error.message.split("\n")[0]}`
-        : "Something went wrong while unpublishing the product."
-    );
+    throw new Error(error?.message || "Failed to unpublish product.");
   }
 }
 
-export async function deleteProduct(id: number) {
+export async function publishProduct(id: number) {
   try {
-    await prisma.product.delete({
+    await prisma.product.update({
       where: { id },
+      data: { status: "Active" },
     });
-
     revalidatePath("/dashboard/products");
     revalidatePath("/");
     revalidatePath("/products");
+    revalidatePath("/inventory");
   } catch (error: any) {
-    console.error("PRISMA ERROR:", error);
-    throw new Error(
-      error?.message
-        ? `Error: ${error.message.split("\n")[0]}`
-        : "Something went wrong while deleting the product."
-    );
+    throw new Error(error?.message || "Failed to publish product.");
+  }
+}
+
+// ──── Category Actions ────
+
+export async function createCategory(formData: FormData) {
+  try {
+    const name = formData.get("name") as string;
+    const banner = formData.get("banner") as string | null;
+    const isFeatured = formData.get("isFeatured") === "on";
+
+    if (!name?.trim()) {
+      throw new Error("Category name is required.");
+    }
+
+    const slug = name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+
+    const existing = await prisma.category.findUnique({ where: { slug } });
+    if (existing) {
+      throw new Error("A category with this name already exists.");
+    }
+
+    await prisma.category.create({
+      data: {
+        name: name.trim(),
+        slug,
+        banner: banner?.trim() || null,
+        isFeatured,
+      },
+    });
+
+    revalidatePath("/dashboard/products/category");
+    revalidatePath("/");
+  } catch (error: any) {
+    throw new Error(error?.message || "Failed to create category.");
+  }
+}
+
+export async function updateCategory(id: number, formData: FormData) {
+  try {
+    const banner = formData.get("banner") as string | null;
+    const isFeatured = formData.get("isFeatured") === "on";
+
+    await prisma.category.update({
+      where: { id },
+      data: {
+        banner: banner?.trim() || null,
+        isFeatured,
+      },
+    });
+
+    revalidatePath("/dashboard/products/category");
+    revalidatePath("/");
+  } catch (error: any) {
+    throw new Error(error?.message || "Failed to update category.");
+  }
+}
+
+export async function deleteCategory(id: number) {
+  try {
+    const cat = await prisma.category.findUnique({
+      where: { id },
+      include: { _count: { select: { products: true } } },
+    });
+
+    if (cat?._count.products && cat._count.products > 0) {
+      throw new Error("Cannot delete a category that has products.");
+    }
+
+    await prisma.category.delete({ where: { id } });
+    revalidatePath("/dashboard/products/category");
+    revalidatePath("/");
+  } catch (error: any) {
+    throw new Error(error?.message || "Failed to delete category.");
+  }
+}
+
+export async function createUnit(
+  _prevState: { success: boolean; error: string | null },
+  formData: FormData
+) {
+  try {
+    const name = (formData.get("name") as string)?.trim();
+    const usage = (formData.get("usage") as string)?.trim();
+
+    if (!name) {
+      throw new Error("Unit name is required.");
+    }
+
+    const existing = await prisma.unit.findUnique({
+      where: { name },
+    });
+
+    if (existing) {
+      throw new Error("A unit with this name already exists.");
+    }
+
+    await prisma.unit.create({
+      data: {
+        name,
+        usage: usage || null,
+      },
+    });
+
+    revalidatePath("/dashboard/products/units");
+    revalidatePath("/dashboard/products/add");
+    revalidatePath("/dashboard/products");
+    return { success: true, error: null };
+  } catch (error: any) {
+    return {
+      success: false,
+      error: error?.message || "Failed to create unit.",
+    };
+  }
+}
+
+export async function updateUnit(
+  id: number,
+  _prevState: { success: boolean; error: string | null },
+  formData: FormData
+) {
+  try {
+    const name = (formData.get("name") as string)?.trim();
+    const usage = (formData.get("usage") as string)?.trim();
+
+    if (!name) {
+      throw new Error("Unit name is required.");
+    }
+
+    const currentUnit = await prisma.unit.findUnique({
+      where: { id },
+    });
+
+    if (!currentUnit) {
+      throw new Error("Unit not found.");
+    }
+
+    const duplicate = await prisma.unit.findUnique({
+      where: { name },
+    });
+
+    if (duplicate && duplicate.id !== id) {
+      throw new Error("A unit with this name already exists.");
+    }
+
+    await prisma.$transaction([
+      prisma.unit.update({
+        where: { id },
+        data: {
+          name,
+          usage: usage || null,
+        },
+      }),
+      prisma.product.updateMany({
+        where: { unit: currentUnit.name },
+        data: { unit: name },
+      }),
+    ]);
+
+    revalidatePath("/dashboard/products/units");
+    revalidatePath(`/dashboard/products/units/${id}/edit`);
+    revalidatePath("/dashboard/products/add");
+    revalidatePath("/dashboard/products");
+    revalidatePath("/products");
+    return { success: true, error: null };
+  } catch (error: any) {
+    return {
+      success: false,
+      error: error?.message || "Failed to update unit.",
+    };
+  }
+}
+
+export async function deleteUnit(id: number) {
+  try {
+    const unit = await prisma.unit.findUnique({
+      where: { id },
+    });
+
+    if (!unit) {
+      throw new Error("Unit not found.");
+    }
+
+    const productCount = await prisma.product.count({
+      where: { unit: unit.name },
+    });
+
+    if (productCount > 0) {
+      throw new Error("Cannot delete a unit that is assigned to products.");
+    }
+
+    await prisma.unit.delete({
+      where: { id },
+    });
+
+    revalidatePath("/dashboard/products/units");
+    revalidatePath("/dashboard/products/add");
+    revalidatePath("/dashboard/products");
+  } catch (error: any) {
+    throw new Error(error?.message || "Failed to delete unit.");
   }
 }

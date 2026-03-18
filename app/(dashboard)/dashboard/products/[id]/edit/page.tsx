@@ -29,9 +29,14 @@ export default async function EditProductPage({
     notFound();
   }
 
+  const units = await prisma.unit.findMany({
+    orderBy: { name: "asc" },
+  });
+
   return (
     <ProductEditorForm
       mode="edit"
+      units={units}
       initialData={{
         id: product.id,
         name: product.name,
@@ -39,6 +44,7 @@ export default async function EditProductPage({
         price: String(product.priceInCents / 100),
         stock: String(product.stock),
         category: product.category.name,
+        unit: product.unit,
         status: product.status,
         variations:
           product.variations.length > 0
