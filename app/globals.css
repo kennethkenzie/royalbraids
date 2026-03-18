@@ -13,6 +13,20 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .premium-scroll {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .premium-scroll::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 @theme inline {

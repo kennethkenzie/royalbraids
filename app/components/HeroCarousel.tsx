@@ -109,10 +109,10 @@ export default function HeroCarousel() {
                 : "pointer-events-none z-0 opacity-0"
             }`}
           >
-            <div className="relative z-20 mx-auto h-full max-w-[1400px] px-4 md:px-10 lg:px-16">
-              <div className="grid h-full w-full grid-cols-2 items-center gap-4 md:gap-12 lg:gap-20">
+            <div className="relative z-20 mx-auto h-full px-4 md:px-10 lg:px-20">
+              <div className="grid h-full w-full grid-cols-2 items-center gap-0">
                 {/* Left: Text Content */}
-                <div className="flex flex-col justify-center py-4 text-left">
+                <div className="flex flex-col justify-center py-4 text-left lg:pl-32">
                   <p className="mb-1 text-[8px] font-medium uppercase tracking-[0.3em] text-zinc-500 md:mb-6 md:text-[12px] md:tracking-[0.4em]">
                     {slide.eyebrow}
                   </p>
@@ -121,7 +121,7 @@ export default function HeroCarousel() {
                     {slide.title}
                   </h1>
 
-                  <p className="mt-1 text-[10px] leading-relaxed text-zinc-600 md:mt-8 md:text-[16px] lg:max-w-[480px] lg:text-[18px]">
+                  <p className="mt-1 text-[10px] leading-relaxed text-zinc-600 md:mt-8 md:text-[16px] lg:max-w-[540px] lg:text-[18px]">
                     {slide.description}
                   </p>
 
@@ -133,7 +133,7 @@ export default function HeroCarousel() {
                 </div>
 
                 {/* Right: Image */}
-                <div className="flex h-full items-end justify-end md:pr-4 lg:pr-10">
+                <div className="flex h-full items-end justify-start">
                   <div className="relative h-full w-full max-h-[250px] md:max-h-[500px] lg:max-h-[750px] xl:max-h-[800px]">
                     <Image
                       src={slide.image}

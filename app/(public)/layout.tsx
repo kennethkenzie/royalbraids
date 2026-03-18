@@ -1,5 +1,6 @@
 import FentyHeader from "../components/FentyHeader";
 import RoyalBridalsFooter from "../components/RoyalBridalsFooter";
+import ReelsProductCarousel from "../components/ReelsProductCarousel";
 
 export default function PublicLayout({
   children,
@@ -10,6 +11,7 @@ export default function PublicLayout({
     <>
       <FentyHeader />
       {children}
+      <ReelsProductCarousel />
       <RoyalBridalsFooter />
     </>
   );

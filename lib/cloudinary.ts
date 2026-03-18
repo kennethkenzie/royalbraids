@@ -1,17 +1,29 @@
-const CLOUDINARY_CLOUD_NAME = "doh2vn9zn";
+const CLOUDINARY_CLOUD_NAME =
+  process.env.CLOUDINARY_CLOUD_NAME || "dnvm4kuel";
+const CLOUDINARY_ASSET_CLOUD_NAME =
+  process.env.CLOUDINARY_ASSET_CLOUD_NAME || "doh2vn9zn";
 
 export function cloudinaryImage(
   publicId: string,
-  transformations = "f_auto,q_auto"
+  transformations = "f_auto,q_auto",
+  cloudName = CLOUDINARY_ASSET_CLOUD_NAME
 ) {
-  return `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/upload/${transformations}/${publicId}`;
+  return `https://res.cloudinary.com/${cloudName}/image/upload/${transformations}/${publicId}`;
 }
 
 export function cloudinaryFetch(
   sourceUrl: string,
   transformations = "f_auto,q_auto"
 ) {
-  return `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/fetch/${transformations}/${encodeURIComponent(sourceUrl)}`;
+  return sourceUrl;
+}
+
+export function cloudinaryVideo(
+  publicId: string,
+  transformations = "f_auto,q_auto",
+  cloudName = CLOUDINARY_ASSET_CLOUD_NAME
+) {
+  return `https://res.cloudinary.com/${cloudName}/video/upload/${transformations}/${publicId}`;
 }
 
 export const cloudinaryImages = {
