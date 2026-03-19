@@ -9,6 +9,25 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async redirects() {
+    return [
+      {
+        source: "/admin/inventory/new",
+        destination: "/dashboard/products/add",
+        permanent: true,
+      },
+      {
+        source: "/admin/inventory",
+        destination: "/dashboard/products",
+        permanent: true,
+      },
+      {
+        source: "/admin",
+        destination: "/dashboard",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
