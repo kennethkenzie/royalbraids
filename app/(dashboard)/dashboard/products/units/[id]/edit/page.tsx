@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import prisma from "@/lib/prisma";
 import UnitEditForm from "@/app/components/UnitEditForm";
 
+export const dynamic = "force-dynamic";
+
 type EditUnitPageProps = {
   params: Promise<{ id: string }>;
 };

@@ -41,6 +41,7 @@ type ProductEditorFormProps = {
   mode: "create" | "edit";
   initialData?: ProductFormData;
   units?: Array<{ id: number; name: string }>;
+  categories?: Array<{ id: number; name: string }>;
 };
 
 const defaultProduct: ProductFormData = {
@@ -60,6 +61,7 @@ export default function ProductEditorForm({
   mode,
   initialData,
   units = [],
+  categories = [],
 }: ProductEditorFormProps) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -87,6 +89,15 @@ export default function ProductEditorForm({
 
   const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
   const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+  const categoryOptions =
+    categories.length > 0
+      ? categories
+      : [
+          { id: 1, name: "Braids" },
+          { id: 2, name: "Crochet" },
+          { id: 3, name: "Weaves" },
+          { id: 4, name: "Closure" },
+        ];
 
   const addVariation = () => {
     setVariations([...variations, { id: Date.now(), name: "", value: "" }]);
@@ -318,10 +329,11 @@ export default function ProductEditorForm({
                   onChange={(e) => setCategory(e.target.value)}
                   className="h-11 w-full appearance-none rounded-xl border border-transparent bg-zinc-50 px-4 text-[14px] outline-none transition-all focus:border-black/10 focus:bg-white"
                 >
-                  <option>Braids</option>
-                  <option>Crochet</option>
-                  <option>Weaves</option>
-                  <option>Closure</option>
+                  {categoryOptions.map((categoryOption) => (
+                    <option key={categoryOption.id} value={categoryOption.name}>
+                      {categoryOption.name}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>

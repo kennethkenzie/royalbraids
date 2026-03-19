@@ -1,14 +1,22 @@
 import { ArrowLeft, ArrowRight, Star } from "lucide-react";
 import prisma from "@/lib/prisma";
 import Link from "next/link";
+import { unstable_noStore as noStore } from "next/cache";
 
 async function getLatestProducts() {
-  return await prisma.product.findMany({
-    where: { status: "Active" },
-    include: { category: true },
-    orderBy: { createdAt: "desc" },
-    take: 12,
-  });
+  noStore();
+
+  try {
+    return await prisma.product.findMany({
+      where: { status: "Active" },
+      include: { category: true },
+      orderBy: { createdAt: "desc" },
+      take: 12,
+    });
+  } catch (error) {
+    console.error("Failed to fetch latest products:", error);
+    return [];
+  }
 }
 
 export default async function LatestProductsSection() {

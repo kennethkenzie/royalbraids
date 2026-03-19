@@ -6,6 +6,19 @@
 }
 
 @layer utilities {
+  .marquee-track {
+    display: flex;
+    width: max-content;
+    min-width: 100%;
+    animation: promo-marquee 22s linear infinite;
+  }
+  .marquee-group {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 3rem;
+    padding-right: 3rem;
+  }
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
@@ -26,6 +39,15 @@
   }
   .premium-scroll::-webkit-scrollbar {
     display: none;
+  }
+}
+
+@keyframes promo-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
   }
 }
 

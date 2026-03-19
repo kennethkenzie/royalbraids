@@ -12,15 +12,22 @@ import prisma from "@/lib/prisma";
 import Link from "next/link";
 import { deleteProduct, unpublishProduct, publishProduct } from "@/lib/actions";
 
+export const dynamic = "force-dynamic";
+
 async function getProducts() {
-  return await prisma.product.findMany({
-    include: {
-      category: true,
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
+  try {
+    return await prisma.product.findMany({
+      include: {
+        category: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+  } catch (error) {
+    console.error("Failed to fetch dashboard products:", error);
+    return [];
+  }
 }
 
 export default async function ProductsPage() {

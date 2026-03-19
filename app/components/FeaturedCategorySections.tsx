@@ -1,19 +1,27 @@
 import { Star } from "lucide-react";
 import prisma from "@/lib/prisma";
 import Link from "next/link";
+import { unstable_noStore as noStore } from "next/cache";
 
 async function getFeaturedCategories() {
-  return await prisma.category.findMany({
-    where: { isFeatured: true, banner: { not: null } },
-    include: {
-      products: {
-        where: { status: "Active" },
-        orderBy: { createdAt: "desc" },
-        take: 12,
+  noStore();
+
+  try {
+    return await prisma.category.findMany({
+      where: { isFeatured: true, banner: { not: null } },
+      include: {
+        products: {
+          where: { status: "Active" },
+          orderBy: { createdAt: "desc" },
+          take: 12,
+        },
       },
-    },
-    orderBy: { updatedAt: "desc" },
-  });
+      orderBy: { updatedAt: "desc" },
+    });
+  } catch (error) {
+    console.error("Failed to fetch featured categories:", error);
+    return [];
+  }
 }
 
 export default async function FeaturedCategorySections() {

@@ -1,10 +1,30 @@
 import ProductEditorForm from "@/app/components/ProductEditorForm";
 import prisma from "@/lib/prisma";
 
-export default async function AddProductPage() {
-  const units = await prisma.unit.findMany({
-    orderBy: { name: "asc" },
-  });
+export const dynamic = "force-dynamic";
 
-  return <ProductEditorForm mode="create" units={units} />;
+export default async function AddProductPage() {
+  let units: Array<{ id: number; name: string }> = [];
+  let categories: Array<{ id: number; name: string }> = [];
+
+  try {
+    units = await prisma.unit.findMany({
+      orderBy: { name: "asc" },
+    });
+  } catch (error) {
+    console.error("Failed to fetch units for add product page:", error);
+  }
+
+  try {
+    categories = await prisma.category.findMany({
+      select: { id: true, name: true },
+      orderBy: { name: "asc" },
+    });
+  } catch (error) {
+    console.error("Failed to fetch categories for add product page:", error);
+  }
+
+  return (
+    <ProductEditorForm mode="create" units={units} categories={categories} />
+  );
 }

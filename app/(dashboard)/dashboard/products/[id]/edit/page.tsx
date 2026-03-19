@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import ProductEditorForm from "@/app/components/ProductEditorForm";
 import prisma from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 type EditProductPageProps = {
   params: Promise<{ id: string }>;
 };
@@ -29,14 +31,21 @@ export default async function EditProductPage({
     notFound();
   }
 
-  const units = await prisma.unit.findMany({
-    orderBy: { name: "asc" },
-  });
+  const [units, categories] = await Promise.all([
+    prisma.unit.findMany({
+      orderBy: { name: "asc" },
+    }),
+    prisma.category.findMany({
+      select: { id: true, name: true },
+      orderBy: { name: "asc" },
+    }),
+  ]);
 
   return (
     <ProductEditorForm
       mode="edit"
       units={units}
+      categories={categories}
       initialData={{
         id: product.id,
         name: product.name,

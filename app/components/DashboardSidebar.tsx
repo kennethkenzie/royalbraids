@@ -166,10 +166,16 @@ export default function DashboardSidebar({ isOpen, onClose }: DashboardSidebarPr
 
           {/* Footer / User Session */}
           <div className="border-t border-zinc-800/50 p-4">
-            <button className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-[14px] font-medium text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-white">
+            <Link
+              href="/login"
+              className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-[14px] font-medium text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-white"
+              onClick={() => {
+                if (window.innerWidth < 1024) onClose();
+              }}
+            >
               <LogOut className="h-4 w-4 text-zinc-400 group-hover:text-white" />
-              Sign Out
-            </button>
+              Logout
+            </Link>
           </div>
         </div>
       </aside>

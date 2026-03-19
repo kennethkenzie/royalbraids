@@ -7,15 +7,36 @@ import { cloudinaryImages } from "@/lib/cloudinary";
 export default function FentyHeader() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navLinks = ["Closure", "Crochet Braid", "Weaves", "Braids", "Blog", "Contact Us", "Help"];
+  const promoMessages = [
+    "Free delivery in Kampala on qualifying orders",
+    "New premium braid textures now available",
+    "Book bulk orders for salons and resellers",
+  ];
 
   return (
     <header className="w-full bg-black">
       <div className="w-full bg-white">
-        {/* Top thin black bar */}
-        <div className="h-7 w-full bg-black" />
+        {/* Top promotional black bar */}
+        <div className="flex h-11 w-full items-center overflow-hidden bg-black text-white md:h-12">
+          <div className="marquee-track">
+            {[0, 1].map((copyIndex) => (
+              <div key={copyIndex} className="marquee-group">
+                {promoMessages.map((message) => (
+                  <span
+                    key={`${copyIndex}-${message}`}
+                    className="flex items-center gap-4 whitespace-nowrap text-[11px] font-medium uppercase tracking-[0.22em] md:text-xs"
+                  >
+                    <span className="text-white/55">*</span>
+                    {message}
+                  </span>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
 
         {/* Main top row */}
-        <div className="flex h-[62px] items-center justify-between border-b border-zinc-200 px-6 md:px-12 lg:px-20">
+        <div className="flex h-[72px] items-center justify-between border-b border-zinc-200 px-6 md:h-[82px] md:px-12 lg:px-20">
           {/* Left: Mobile Menu & Country */}
           <div className="flex min-w-[80px] items-center gap-4 text-[12px] text-black md:min-w-[180px] md:text-sm">
             <button 

@@ -4,24 +4,31 @@ import prisma from "@/lib/prisma";
 import { deleteUnit } from "@/lib/actions";
 import UnitCreateForm from "@/app/components/UnitCreateForm";
 
+export const dynamic = "force-dynamic";
+
 async function getUnits() {
-  const units = await prisma.unit.findMany({
-    orderBy: { name: "asc" },
-  });
+  try {
+    const units = await prisma.unit.findMany({
+      orderBy: { name: "asc" },
+    });
 
-  const usageCounts = await Promise.all(
-    units.map(async (unit) => ({
-      id: unit.id,
-      count: await prisma.product.count({
-        where: { unit: unit.name },
-      }),
-    }))
-  );
+    const usageCounts = await Promise.all(
+      units.map(async (unit) => ({
+        id: unit.id,
+        count: await prisma.product.count({
+          where: { unit: unit.name },
+        }),
+      }))
+    );
 
-  return units.map((unit) => ({
-    ...unit,
-    productCount: usageCounts.find((item) => item.id === unit.id)?.count || 0,
-  }));
+    return units.map((unit) => ({
+      ...unit,
+      productCount: usageCounts.find((item) => item.id === unit.id)?.count || 0,
+    }));
+  } catch (error) {
+    console.error("Failed to fetch units:", error);
+    return [];
+  }
 }
 
 export default async function UnitsPage() {

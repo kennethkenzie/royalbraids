@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import DashboardSidebar from "@/app/components/DashboardSidebar";
 import { Menu, Search, Bell, User } from "lucide-react";
+import Link from "next/link";
 
 export default function DashboardLayout({
   children,
@@ -41,6 +42,12 @@ export default function DashboardLayout({
           </div>
 
           <div className="flex items-center gap-2 md:gap-4">
+            <Link
+              href="/"
+              className="hidden rounded-full border border-zinc-200 px-4 py-2 text-[13px] font-medium text-zinc-700 transition hover:border-black hover:text-black lg:inline-flex"
+            >
+              Back to Website
+            </Link>
             <button className="rounded-full p-2 hover:bg-zinc-100">
               <Bell className="h-5 w-5 text-zinc-600" />
             </button>

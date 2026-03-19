@@ -8,14 +8,15 @@ datasource db {
 }
 
 model Category {
-  id         Int       @id @default(autoincrement())
-  name       String
-  slug       String    @unique
-  banner     String?
-  isFeatured Boolean   @default(false)
-  products   Product[]
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
+  id          Int       @id @default(autoincrement())
+  name        String
+  slug        String    @unique
+  banner      String?
+  circleImage String?
+  isFeatured  Boolean   @default(false)
+  products    Product[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }
 
 model Color {
@@ -47,23 +48,23 @@ model Product {
 }
 
 model Variation {
-  id        Int      @id @default(autoincrement())
-  type      String   // e.g. Length, Texture
-  value     String   // e.g. 24 inch, Silky
+  id        Int     @id @default(autoincrement())
+  type      String // e.g. Length, Texture
+  value     String // e.g. 24 inch, Silky
   productId Int
-  product   Product  @relation(fields: [productId], references: [id])
+  product   Product @relation(fields: [productId], references: [id])
 }
 
 model SizeGuide {
-  id        Int      @id @default(autoincrement())
-  type      String   // e.g. Braids, Weaves
-  packs     String?  // e.g. 3-5 packs
-  sizes     Size[]
+  id    Int     @id @default(autoincrement())
+  type  String // e.g. Braids, Weaves
+  packs String? // e.g. 3-5 packs
+  sizes Size[]
 }
 
 model Size {
   id          Int       @id @default(autoincrement())
-  label       String    // e.g. Shoulder (12")
+  label       String // e.g. Shoulder (12")
   sizeGuideId Int
   sizeGuide   SizeGuide @relation(fields: [sizeGuideId], references: [id])
 }

@@ -230,10 +230,14 @@ export async function publishProduct(id: number) {
 
 // ──── Category Actions ────
 
-export async function createCategory(formData: FormData) {
+export async function createCategory(
+  _prevState: { success: boolean; error: string | null },
+  formData: FormData
+) {
   try {
     const name = formData.get("name") as string;
     const banner = formData.get("banner") as string | null;
+    const circleImage = formData.get("circleImage") as string | null;
     const isFeatured = formData.get("isFeatured") === "on";
 
     if (!name?.trim()) {
@@ -245,36 +249,52 @@ export async function createCategory(formData: FormData) {
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-+|-+$/g, "");
 
-    const existing = await prisma.category.findUnique({ where: { slug } });
-    if (existing) {
-      throw new Error("A category with this name already exists.");
-    }
-
     await prisma.category.create({
       data: {
         name: name.trim(),
         slug,
         banner: banner?.trim() || null,
+        circleImage: circleImage?.trim() || null,
         isFeatured,
       },
     });
 
     revalidatePath("/dashboard/products/category");
     revalidatePath("/");
+    return { success: true, error: null };
   } catch (error: any) {
-    throw new Error(error?.message || "Failed to create category.");
+    if (error?.code === "P2002") {
+      return {
+        success: false,
+        error: "A category with this name already exists.",
+      };
+    }
+
+    if (error?.code === "P1001") {
+      return {
+        success: false,
+        error: "The database is currently unreachable. Please try again in a moment.",
+      };
+    }
+
+    return {
+      success: false,
+      error: error?.message || "Failed to create category.",
+    };
   }
 }
 
 export async function updateCategory(id: number, formData: FormData) {
   try {
     const banner = formData.get("banner") as string | null;
+    const circleImage = formData.get("circleImage") as string | null;
     const isFeatured = formData.get("isFeatured") === "on";
 
     await prisma.category.update({
       where: { id },
       data: {
         banner: banner?.trim() || null,
+        circleImage: circleImage?.trim() || null,
         isFeatured,
       },
     });

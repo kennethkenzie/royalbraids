@@ -2,12 +2,19 @@ import Link from "next/link";
 import { ArrowLeft, Star } from "lucide-react";
 import prisma from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 async function getProducts() {
-  return prisma.product.findMany({
-    where: { status: "Active" },
-    include: { category: true },
-    orderBy: { createdAt: "desc" },
-  });
+  try {
+    return await prisma.product.findMany({
+      where: { status: "Active" },
+      include: { category: true },
+      orderBy: { createdAt: "desc" },
+    });
+  } catch (error) {
+    console.error("Failed to fetch storefront products:", error);
+    return [];
+  }
 }
 
 export default async function ProductsPage() {

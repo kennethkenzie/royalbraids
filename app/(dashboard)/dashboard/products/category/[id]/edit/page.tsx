@@ -4,9 +4,13 @@ import Link from "next/link";
 import { ArrowLeft, Image } from "lucide-react";
 import { notFound } from "next/navigation";
 import CategoryBannerField from "@/app/components/CategoryBannerField";
+import CategoryCircleImageField from "@/app/components/CategoryCircleImageField";
 
-export default async function EditCategoryPage({ params }: { params: { id: string } }) {
-  const id = parseInt(params.id);
+export const dynamic = "force-dynamic";
+
+export default async function EditCategoryPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id: idParam } = await params;
+  const id = parseInt(idParam);
   if (isNaN(id)) notFound();
 
   const category = await prisma.category.findUnique({
@@ -53,6 +57,7 @@ export default async function EditCategoryPage({ params }: { params: { id: strin
             </div>
 
             <CategoryBannerField defaultValue={category.banner ?? ""} />
+            <CategoryCircleImageField defaultValue={(category as any).circleImage ?? ""} />
 
             <div className="flex items-start gap-3 rounded-xl bg-amber-50 border border-amber-100 px-4 py-4">
               <input
@@ -108,6 +113,12 @@ export default async function EditCategoryPage({ params }: { params: { id: strin
               <span className="text-zinc-500">Banner</span>
               <span className={`font-medium ${category.banner ? "text-emerald-600" : "text-zinc-400"}`}>
                 {category.banner ? "Set" : "Not set"}
+              </span>
+            </div>
+            <div className="flex items-center justify-between py-2">
+              <span className="text-zinc-500">Circle Image</span>
+              <span className={`font-medium ${(category as any).circleImage ? "text-emerald-600" : "text-zinc-400"}`}>
+                {(category as any).circleImage ? "Set" : "Not set"}
               </span>
             </div>
           </div>
