@@ -115,12 +115,18 @@ export default async function CategoryPage() {
                             <Image className="h-3.5 w-3.5" />
                             Edit
                           </Link>
-                          <form action={deleteCategory.bind(null, cat.id)}>
+                          <form 
+                            action={deleteCategory.bind(null, cat.id)}
+                            onSubmit={(e) => {
+                              if (!confirm(`Are you sure you want to delete "${cat.name}"? This will also delete all ${cat._count.products} products in this category.`)) {
+                                e.preventDefault();
+                              }
+                            }}
+                          >
                             <button
                               type="submit"
-                              disabled={cat._count.products > 0}
-                              className="p-2 text-zinc-400 hover:text-red-500 transition disabled:opacity-30 disabled:cursor-not-allowed"
-                              title={cat._count.products > 0 ? "Remove all products first" : "Delete category"}
+                              className="p-2 text-zinc-400 hover:text-red-500 transition"
+                              title="Delete category and products"
                             >
                               <Trash2 className="h-4 w-4" />
                             </button>

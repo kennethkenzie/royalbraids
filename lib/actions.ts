@@ -191,9 +191,25 @@ export async function updateProduct(formData: any) {
 
 export async function deleteProduct(id: number) {
   try {
-    await prisma.product.delete({ where: { id } });
+    // Cascading delete of variations and then the product
+    await prisma.$transaction([
+      // First, delete all variations associated with this product
+      prisma.variation.deleteMany({
+        where: { productId: id },
+      }),
+      // Then, delete the product itself
+      prisma.product.delete({
+        where: { id },
+      }),
+    ]);
+
     revalidatePath("/dashboard/products");
+    revalidatePath("/");
+    revalidatePath("/products");
+    revalidatePath("/inventory");
+    
   } catch (error: any) {
+    console.error("PRISMA ERROR (Delete Product):", error);
     throw new Error(error?.message || "Failed to delete product.");
   }
 }
@@ -308,19 +324,26 @@ export async function updateCategory(id: number, formData: FormData) {
 
 export async function deleteCategory(id: number) {
   try {
-    const cat = await prisma.category.findUnique({
-      where: { id },
-      include: { _count: { select: { products: true } } },
-    });
+    // Perform cascading delete of products and then the category
+    await prisma.$transaction([
+      // First, delete all products associated with this category
+      prisma.product.deleteMany({
+        where: { categoryId: id },
+      }),
+      // Then, delete the category itself
+      prisma.category.delete({
+        where: { id },
+      }),
+    ]);
 
-    if (cat?._count.products && cat._count.products > 0) {
-      throw new Error("Cannot delete a category that has products.");
-    }
-
-    await prisma.category.delete({ where: { id } });
     revalidatePath("/dashboard/products/category");
     revalidatePath("/");
+    revalidatePath("/dashboard/products");
+    revalidatePath("/products");
+    revalidatePath("/inventory");
+    
   } catch (error: any) {
+    console.error("PRISMA ERROR (Delete Category):", error);
     throw new Error(error?.message || "Failed to delete category.");
   }
 }
