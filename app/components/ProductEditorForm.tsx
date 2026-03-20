@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import {
   ChevronLeft,
   Upload,
@@ -14,14 +14,60 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createProduct, updateProduct } from "@/lib/actions";
 
-const availableColors = [
-  { id: 1, name: "Jet Black", hex: "#000000" },
-  { id: 2, name: "Dark Brown", hex: "#3D2B1F" },
-  { id: 3, name: "Auburn", hex: "#722620" },
-  { id: 4, name: "Honey Blonde", hex: "#D4AF37" },
-  { id: 5, name: "Platinum", hex: "#E5E4E2" },
-  { id: 6, name: "Copper", hex: "#B87333" },
+type ProductColor = {
+  id?: number;
+  name: string;
+  hex: string;
+  code?: string | null;
+};
+
+const fallbackColors: ProductColor[] = [
+  { name: "Jet Black", hex: "#000000", code: "1" },
+  { name: "Dark Brown", hex: "#3D2B1F", code: "2" },
+  { name: "Auburn", hex: "#722620", code: "33" },
+  { name: "Honey Blonde", hex: "#D4AF37", code: "27" },
+  { name: "Platinum", hex: "#E5E4E2", code: "613" },
+  { name: "Copper", hex: "#B87333", code: "350" },
 ];
+
+function normalizeHex(hex: string) {
+  return hex.trim().toUpperCase();
+}
+
+function getReadableTextColor(hex: string) {
+  const value = hex.replace("#", "");
+  const normalized =
+    value.length === 3
+      ? value
+          .split("")
+          .map((char) => char + char)
+          .join("")
+      : value;
+
+  const red = Number.parseInt(normalized.slice(0, 2), 16);
+  const green = Number.parseInt(normalized.slice(2, 4), 16);
+  const blue = Number.parseInt(normalized.slice(4, 6), 16);
+  const brightness = (red * 299 + green * 587 + blue * 114) / 1000;
+
+  return brightness > 160 ? "text-black" : "text-white";
+}
+
+function buildColorName(hex: string) {
+  return `Custom ${normalizeHex(hex)}`;
+}
+
+function mergeColors(colors: ProductColor[]) {
+  const colorMap = new Map<string, ProductColor>();
+
+  colors.forEach((color) => {
+    colorMap.set(normalizeHex(color.hex), {
+      ...color,
+      hex: normalizeHex(color.hex),
+    });
+  });
+
+  return Array.from(colorMap.values());
+}
 
 type ProductFormData = {
   id?: number;
@@ -33,7 +79,7 @@ type ProductFormData = {
   unit: string;
   status?: string;
   variations: Array<{ id: number; name: string; value: string }>;
-  selectedColors: number[];
+  selectedColors: ProductColor[];
   imageUrl: string;
 };
 
@@ -42,6 +88,7 @@ type ProductEditorFormProps = {
   initialData?: ProductFormData;
   units?: Array<{ id: number; name: string }>;
   categories?: Array<{ id: number; name: string }>;
+  availableColors?: ProductColor[];
 };
 
 const defaultProduct: ProductFormData = {
@@ -53,7 +100,7 @@ const defaultProduct: ProductFormData = {
   unit: "Piece",
   status: "Active",
   variations: [{ id: 1, name: "Length", value: "24 inch" }],
-  selectedColors: [1],
+  selectedColors: [fallbackColors[0]],
   imageUrl: "",
 };
 
@@ -62,10 +109,15 @@ export default function ProductEditorForm({
   initialData,
   units = [],
   categories = [],
+  availableColors = [],
 }: ProductEditorFormProps) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const product = initialData || defaultProduct;
+  const paletteColors = useMemo(
+    () => mergeColors([...fallbackColors, ...availableColors, ...product.selectedColors]),
+    [availableColors, product.selectedColors]
+  );
 
   const [name, setName] = useState(product.name);
   const [description, setDescription] = useState(product.description);
@@ -75,9 +127,12 @@ export default function ProductEditorForm({
   const [unit, setUnit] = useState(product.unit);
   const [status, setStatus] = useState(product.status || "Active");
   const [variations, setVariations] = useState(product.variations);
-  const [selectedColors, setSelectedColors] = useState<number[]>(
+  const [selectedColors, setSelectedColors] = useState<ProductColor[]>(
     product.selectedColors
   );
+  const [customColorHex, setCustomColorHex] = useState("#C08457");
+  const [customColorName, setCustomColorName] = useState("");
+  const [customColorCode, setCustomColorCode] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [imageUrl, setImageUrl] = useState(product.imageUrl);
@@ -107,10 +162,47 @@ export default function ProductEditorForm({
     setVariations(variations.filter((variation) => variation.id !== id));
   };
 
-  const toggleColor = (id: number) => {
-    setSelectedColors((prev) =>
-      prev.includes(id) ? prev.filter((colorId) => colorId !== id) : [...prev, id]
-    );
+  const toggleColor = (color: ProductColor) => {
+    const normalizedHex = normalizeHex(color.hex);
+
+    setSelectedColors((prev) => {
+      const exists = prev.some((item) => normalizeHex(item.hex) === normalizedHex);
+      if (exists) {
+        return prev.filter((item) => normalizeHex(item.hex) !== normalizedHex);
+      }
+
+      return [
+        ...prev,
+        {
+          ...color,
+          hex: normalizedHex,
+        },
+      ];
+    });
+  };
+
+  const addCustomColor = () => {
+    const normalizedHex = normalizeHex(customColorHex);
+    const trimmedName = customColorName.trim();
+    const nextColor: ProductColor = {
+      name: trimmedName || buildColorName(normalizedHex),
+      hex: normalizedHex,
+      code: customColorCode.trim() || undefined,
+    };
+
+    setSelectedColors((prev) => {
+      const exists = prev.some((item) => normalizeHex(item.hex) === normalizedHex);
+      if (exists) {
+        return prev.map((item) =>
+          normalizeHex(item.hex) === normalizedHex ? { ...item, ...nextColor } : item
+        );
+      }
+
+      return [...prev, nextColor];
+    });
+
+    setCustomColorName("");
+    setCustomColorCode("");
   };
 
   const handleImageSelect = async (
@@ -189,6 +281,14 @@ export default function ProductEditorForm({
       return;
     }
 
+    if (selectedColors.length === 0) {
+      setMessage({
+        type: "error",
+        text: "Select at least one product color.",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     setMessage(null);
 
@@ -200,7 +300,11 @@ export default function ProductEditorForm({
       stock,
       category,
       unit,
-      colors: availableColors.filter((color) => selectedColors.includes(color.id)),
+      colors: selectedColors.map((color) => ({
+        name: color.name.trim() || buildColorName(color.hex),
+        hex: normalizeHex(color.hex),
+        code: color.code?.trim() || undefined,
+      })),
       variations: variations.map((variation) => ({
         name: variation.name,
         value: variation.value,
@@ -473,41 +577,168 @@ export default function ProductEditorForm({
               <h3 className="text-[16px] font-bold text-black">Product Colors</h3>
             </div>
 
-            <div className="grid grid-cols-3 gap-3">
-              {availableColors.map((color) => {
-                const isSelected = selectedColors.includes(color.id);
-                return (
-                  <button
-                    key={color.id}
-                    onClick={() => toggleColor(color.id)}
-                    className={`group relative flex flex-col items-center gap-2 rounded-xl p-2 transition-all ${
-                      isSelected
-                        ? "bg-zinc-900 ring-2 ring-zinc-900 ring-offset-2"
-                        : "bg-zinc-50 hover:bg-zinc-100"
-                    }`}
-                  >
-                    <div
-                      className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/20 shadow-sm transition-transform group-active:scale-90"
-                      style={{ backgroundColor: color.hex }}
-                    >
-                      {isSelected && (
-                        <Check
-                          className={`h-4 w-4 ${
-                            color.hex === "#E5E4E2" ? "text-black" : "text-white"
+            <div className="space-y-6">
+              <div>
+                <p className="mb-3 text-[12px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
+                  Palette
+                </p>
+                <div className="grid grid-cols-3 gap-3">
+                  {paletteColors.map((color) => {
+                    const isSelected = selectedColors.some(
+                      (item) => normalizeHex(item.hex) === normalizeHex(color.hex)
+                    );
+                    return (
+                      <button
+                        key={`${color.hex}-${color.name}`}
+                        type="button"
+                        onClick={() => toggleColor(color)}
+                        title={`${color.name}${color.code ? ` (${color.code})` : ""}`}
+                        className={`group relative flex flex-col items-center gap-2 rounded-xl p-2 transition-all ${
+                          isSelected
+                            ? "bg-zinc-900 ring-2 ring-zinc-900 ring-offset-2"
+                            : "bg-zinc-50 hover:bg-zinc-100"
+                        }`}
+                      >
+                        <div
+                          className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/20 shadow-sm transition-transform group-active:scale-90"
+                          style={{ backgroundColor: color.hex }}
+                        >
+                          {isSelected && (
+                            <Check
+                              className={`h-4 w-4 ${getReadableTextColor(color.hex)}`}
+                            />
+                          )}
+                        </div>
+                        <span
+                          className={`text-center text-[10px] font-bold uppercase tracking-tight ${
+                            isSelected ? "text-white" : "text-zinc-500"
                           }`}
-                        />
-                      )}
+                        >
+                          {color.code || color.name.split(" ")[0]}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-zinc-100 bg-zinc-50/70 p-4">
+                <div className="mb-4 flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-[12px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
+                      Custom Picker
+                    </p>
+                    <p className="mt-1 text-[12px] text-zinc-500">
+                      Choose any color and add it to this product.
+                    </p>
+                  </div>
+                  <input
+                    type="color"
+                    value={customColorHex}
+                    onChange={(e) => setCustomColorHex(normalizeHex(e.target.value))}
+                    className="h-14 w-14 cursor-pointer rounded-xl border border-zinc-200 bg-white p-1"
+                    aria-label="Pick custom product color"
+                  />
+                </div>
+
+                <div className="space-y-3">
+                  <div>
+                    <label className="mb-2 block text-[12px] font-medium text-zinc-700">
+                      Color Name
+                    </label>
+                    <input
+                      type="text"
+                      value={customColorName}
+                      onChange={(e) => setCustomColorName(e.target.value)}
+                      placeholder="e.g. Burgundy Wine"
+                      className="h-10 w-full rounded-xl border border-zinc-200 bg-white px-3 text-[13px] outline-none focus:border-black/20"
+                    />
+                  </div>
+                  <div className="grid grid-cols-[1fr_110px] gap-3">
+                    <div>
+                      <label className="mb-2 block text-[12px] font-medium text-zinc-700">
+                        Hex Value
+                      </label>
+                      <input
+                        type="text"
+                        value={customColorHex}
+                        onChange={(e) => setCustomColorHex(normalizeHex(e.target.value))}
+                        placeholder="#C08457"
+                        className="h-10 w-full rounded-xl border border-zinc-200 bg-white px-3 text-[13px] uppercase outline-none focus:border-black/20"
+                      />
                     </div>
-                    <span
-                      className={`text-center text-[10px] font-bold uppercase tracking-tight ${
-                        isSelected ? "text-white" : "text-zinc-500"
-                      }`}
-                    >
-                      {color.name.split(" ")[0]}
-                    </span>
+                    <div>
+                      <label className="mb-2 block text-[12px] font-medium text-zinc-700">
+                        Code
+                      </label>
+                      <input
+                        type="text"
+                        value={customColorCode}
+                        onChange={(e) => setCustomColorCode(e.target.value)}
+                        placeholder="30"
+                        className="h-10 w-full rounded-xl border border-zinc-200 bg-white px-3 text-[13px] outline-none focus:border-black/20"
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={addCustomColor}
+                    className="h-10 w-full rounded-xl bg-black text-[13px] font-semibold text-white transition hover:bg-zinc-800"
+                  >
+                    Add Custom Color
                   </button>
-                );
-              })}
+                </div>
+              </div>
+
+              <div>
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <p className="text-[12px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
+                    Selected Colors
+                  </p>
+                  <span className="text-[12px] text-zinc-500">
+                    {selectedColors.length} selected
+                  </span>
+                </div>
+
+                {selectedColors.length === 0 ? (
+                  <div className="rounded-xl border border-dashed border-zinc-200 px-4 py-5 text-[13px] text-zinc-500">
+                    No colors selected yet.
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {selectedColors.map((color) => (
+                      <div
+                        key={`${color.hex}-${color.name}`}
+                        className="flex items-center justify-between gap-3 rounded-xl border border-zinc-100 bg-white px-3 py-2"
+                      >
+                        <div className="flex min-w-0 items-center gap-3">
+                          <span
+                            className="h-8 w-8 rounded-full border border-black/10"
+                            style={{ backgroundColor: color.hex }}
+                          />
+                          <div className="min-w-0">
+                            <p className="truncate text-[13px] font-medium text-black">
+                              {color.name}
+                            </p>
+                            <p className="text-[11px] uppercase tracking-wide text-zinc-500">
+                              {color.hex}
+                              {color.code ? ` · Code ${color.code}` : ""}
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => toggleColor(color)}
+                          className="text-[12px] font-medium text-zinc-500 hover:text-black"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 

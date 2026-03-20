@@ -5,8 +5,9 @@ import { Sparkles, ArrowRight, Phone, Lock, AlertCircle, Loader2 } from "lucide-
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { signinClient } from "@/lib/actions";
+import { Suspense } from "react";
 
-export default function SigninPage() {
+function SignInForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/";
@@ -141,5 +142,17 @@ export default function SigninPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function SigninPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center bg-white">
+        <Loader2 className="h-8 w-8 animate-spin text-zinc-200" />
+      </div>
+    }>
+      <SignInForm />
+    </Suspense>
   );
 }
