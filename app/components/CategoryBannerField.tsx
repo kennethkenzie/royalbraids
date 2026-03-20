@@ -5,10 +5,28 @@ import { ImagePlus, Upload, X } from "lucide-react";
 
 type CategoryBannerFieldProps = {
   defaultValue?: string;
+  fieldName?: string;
+  fieldId?: string;
+  label?: string;
+  urlPlaceholder?: string;
+  urlHelpText?: string;
+  uploadLabel?: string;
+  previewAlt?: string;
+  previewLabel?: string;
+  uploadErrorLabel?: string;
 };
 
 export default function CategoryBannerField({
   defaultValue = "",
+  fieldName = "banner",
+  fieldId = "banner",
+  label = "Banner Image URL",
+  urlPlaceholder = "https://res.cloudinary.com/...",
+  urlHelpText = "Paste a Cloudinary or direct image URL",
+  uploadLabel = "Upload Banner",
+  previewAlt = "Category banner preview",
+  previewLabel = "Banner preview",
+  uploadErrorLabel = "Banner",
 }: CategoryBannerFieldProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [bannerUrl, setBannerUrl] = useState(defaultValue);
@@ -65,7 +83,7 @@ export default function CategoryBannerField({
 
       const data = await response.json();
       if (!response.ok || !data.secure_url) {
-        throw new Error(data?.error?.message || "Banner upload failed.");
+        throw new Error(data?.error?.message || `${uploadErrorLabel} upload failed.`);
       }
 
       setBannerUrl(data.secure_url);
@@ -75,7 +93,7 @@ export default function CategoryBannerField({
       setError(
         uploadError instanceof Error
           ? uploadError.message
-          : "Banner upload failed."
+          : `${uploadErrorLabel} upload failed.`
       );
     } finally {
       setIsUploading(false);
@@ -85,35 +103,35 @@ export default function CategoryBannerField({
 
   return (
     <div className="space-y-4">
-      <input type="hidden" name="banner" value={bannerUrl} />
+      <input type="hidden" name={fieldName} value={bannerUrl} />
       <div className="grid gap-4 md:grid-cols-[1fr_170px]">
         <div>
           <label
-            htmlFor="banner"
+            htmlFor={fieldId}
             className="mb-2 block text-[13px] font-medium text-zinc-700"
           >
-            Banner Image URL
+            {label}
           </label>
           <input
             type="url"
-            id="banner"
+            id={fieldId}
             value={bannerUrl}
             onChange={(e) => {
               setBannerUrl(e.target.value);
               setError("");
               setPreviewError("");
             }}
-            placeholder="https://res.cloudinary.com/..."
+            placeholder={urlPlaceholder}
             className="h-11 w-full rounded-xl border border-transparent bg-zinc-50 px-4 text-[14px] outline-none transition-all focus:border-black/10"
           />
           <p className="mt-1 text-[11px] text-zinc-400">
-            Paste a Cloudinary or direct image URL
+            {urlHelpText}
           </p>
         </div>
 
         <div>
           <label className="mb-2 block text-[13px] font-medium text-zinc-700">
-            Upload Banner
+            {uploadLabel}
           </label>
           <input
             ref={fileInputRef}
@@ -154,7 +172,7 @@ export default function CategoryBannerField({
         <div className="overflow-hidden rounded-xl border border-zinc-100">
           <div className="flex items-center justify-between border-b border-zinc-100 bg-zinc-50 px-4 py-2">
             <p className="text-[11px] font-medium text-zinc-500">
-              {imageName || "Banner preview"}
+              {imageName || previewLabel}
             </p>
             <button
               type="button"
@@ -178,10 +196,10 @@ export default function CategoryBannerField({
             <img
               key={previewUrl}
               src={previewUrl}
-              alt="Category banner preview"
+              alt={previewAlt}
               className="h-[180px] w-full object-cover object-top"
               onError={() => {
-                setPreviewError("Banner preview could not be loaded. Check the image URL.");
+                setPreviewError(`${previewLabel} could not be loaded. Check the image URL.`);
               }}
               onLoad={() => {
                 setPreviewError("");

@@ -11,7 +11,11 @@ const initialState = {
   error: null as string | null,
 };
 
-export default function CategoryCreateForm() {
+export default function CategoryCreateForm({
+  parentOptions = [],
+}: {
+  parentOptions?: Array<{ id: number; name: string }>;
+}) {
   const [state, formAction, isPending] = useActionState(
     createCategory,
     initialState
@@ -43,7 +47,38 @@ export default function CategoryCreateForm() {
         />
       </div>
 
+      <div>
+        <label className="mb-2 block text-[13px] font-medium text-zinc-700">
+          Parent Category
+        </label>
+        <select
+          name="parentId"
+          defaultValue=""
+          className="h-11 w-full rounded-xl border border-transparent bg-zinc-50 px-4 text-[14px] outline-none transition-all focus:border-black/10"
+        >
+          <option value="">None (Top-level category)</option>
+          {parentOptions.map((option) => (
+            <option key={option.id} value={option.id}>
+              {option.name}
+            </option>
+          ))}
+        </select>
+        <p className="mt-1 text-[11px] text-zinc-400">
+          Choose a parent if this should appear as a subcategory.
+        </p>
+      </div>
+
       <CategoryBannerField />
+      <CategoryBannerField
+        fieldName="featuredBanner"
+        fieldId="featuredBanner"
+        label="Full Width Featured Banner URL"
+        uploadLabel="Upload Full Banner"
+        previewLabel="Full banner preview"
+        previewAlt="Full width featured banner preview"
+        urlHelpText="Upload or paste the full-width banner shown at the bottom of featured categories."
+        uploadErrorLabel="Full banner"
+      />
       <CategoryCircleImageField />
 
       <div className="flex items-center gap-3 rounded-xl border border-amber-100 bg-amber-50 px-4 py-3">
@@ -61,7 +96,7 @@ export default function CategoryCreateForm() {
             Feature on Homepage
           </label>
           <p className="text-[11px] text-amber-600">
-            Shows this category&apos;s products on the home page
+            Shows this category&apos;s products on the home page and can display the full-width banner at the bottom
           </p>
         </div>
       </div>

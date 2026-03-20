@@ -12,8 +12,12 @@ model Category {
   name        String
   slug        String    @unique
   banner      String?
+  featuredBanner String?
   circleImage String?
   isFeatured  Boolean   @default(false)
+  parentId    Int?
+  parent      Category? @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children    Category[] @relation("CategoryHierarchy")
   products    Product[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
@@ -125,4 +129,13 @@ model OrderItem {
   price     Int // Price at time of purchase
   orderId   Int
   order     Order   @relation(fields: [orderId], references: [id])
+}
+
+model HomeSection {
+  id        Int      @id @default(autoincrement())
+  type      String   @unique // e.g. "HeroCarousel", "CategoryCircles", "MoodProducts", "FeaturedCategories", "LatestProducts"
+  title     String
+  order     Int      @default(0)
+  isVisible Boolean  @default(true)
+  updatedAt DateTime @updatedAt
 }

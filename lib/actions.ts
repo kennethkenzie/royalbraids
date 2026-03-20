@@ -4,6 +4,59 @@ import prisma from "./prisma";
 import { revalidatePath } from "next/cache";
 import crypto from 'node:crypto';
 
+async function resolveParentCategoryId(rawParentId: FormDataEntryValue | null) {
+  if (!rawParentId) {
+    return null;
+  }
+
+  const value = String(rawParentId).trim();
+  if (!value) {
+    return null;
+  }
+
+  const parentId = Number(value);
+  if (Number.isNaN(parentId)) {
+    throw new Error("Invalid parent category.");
+  }
+
+  const parentCategory = await prisma.category.findUnique({
+    where: { id: parentId },
+    select: { id: true },
+  });
+
+  if (!parentCategory) {
+    throw new Error("Selected parent category was not found.");
+  }
+
+  return parentId;
+}
+
+async function ensureValidCategoryParent(categoryId: number, parentId: number | null) {
+  if (parentId === null) {
+    return;
+  }
+
+  if (categoryId === parentId) {
+    throw new Error("A category cannot be its own parent.");
+  }
+
+  let currentParentId: number | null = parentId;
+
+  while (currentParentId !== null) {
+    if (currentParentId === categoryId) {
+      throw new Error("A category cannot be assigned under one of its own subcategories.");
+    }
+
+    const currentParent: { parentId: number | null } | null =
+      await prisma.category.findUnique({
+      where: { id: currentParentId },
+      select: { parentId: true },
+      });
+
+    currentParentId = currentParent?.parentId ?? null;
+  }
+}
+
 export async function createProduct(formData: any) {
   try {
     const { name, description, price, stock, category, unit, colors, variations, status, image } = formData;
@@ -260,8 +313,10 @@ export async function createCategory(
   try {
     const name = formData.get("name") as string;
     const banner = formData.get("banner") as string | null;
+    const featuredBanner = formData.get("featuredBanner") as string | null;
     const circleImage = formData.get("circleImage") as string | null;
     const isFeatured = formData.get("isFeatured") === "on";
+    const parentId = await resolveParentCategoryId(formData.get("parentId"));
 
     if (!name?.trim()) {
       throw new Error("Category name is required.");
@@ -277,8 +332,10 @@ export async function createCategory(
         name: name.trim(),
         slug,
         banner: banner?.trim() || null,
+        featuredBanner: featuredBanner?.trim() || null,
         circleImage: circleImage?.trim() || null,
         isFeatured,
+        parentId,
       },
     });
 
@@ -310,15 +367,21 @@ export async function createCategory(
 export async function updateCategory(id: number, formData: FormData) {
   try {
     const banner = formData.get("banner") as string | null;
+    const featuredBanner = formData.get("featuredBanner") as string | null;
     const circleImage = formData.get("circleImage") as string | null;
     const isFeatured = formData.get("isFeatured") === "on";
+    const parentId = await resolveParentCategoryId(formData.get("parentId"));
+
+    await ensureValidCategoryParent(id, parentId);
 
     await prisma.category.update({
       where: { id },
       data: {
         banner: banner?.trim() || null,
+        featuredBanner: featuredBanner?.trim() || null,
         circleImage: circleImage?.trim() || null,
         isFeatured,
+        parentId,
       },
     });
 
@@ -333,6 +396,10 @@ export async function deleteCategory(id: number) {
   try {
     // Perform cascading delete of products and then the category
     await prisma.$transaction([
+      prisma.category.updateMany({
+        where: { parentId: id },
+        data: { parentId: null },
+      }),
       // First, delete all products associated with this category
       prisma.product.deleteMany({
         where: { categoryId: id },
@@ -658,5 +725,3 @@ export async function signinClient(data: any) {
     return { success: false, error: "Authentication failed. Server issue." };
   }
 }
-
-

@@ -155,6 +155,16 @@ export default async function FeaturedCategorySections() {
                 </div>
               </div>
 
+              {category.featuredBanner && (
+                <div className="mt-4 overflow-hidden">
+                  <img
+                    src={category.featuredBanner}
+                    alt={`${category.name} featured banner`}
+                    className="h-[220px] w-full object-cover object-center md:h-[280px] xl:h-[340px]"
+                  />
+                </div>
+              )}
+
               {/* Progress bar */}
               <div className="relative mt-2 h-[3px] w-full overflow-hidden bg-black/10">
                 <div className="absolute left-0 top-0 h-full w-[40%] bg-black" />

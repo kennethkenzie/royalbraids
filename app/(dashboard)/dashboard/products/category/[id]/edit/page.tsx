@@ -15,10 +15,27 @@ export default async function EditCategoryPage({ params }: { params: Promise<{ i
 
   const category = await prisma.category.findUnique({
     where: { id },
-    include: { _count: { select: { products: true } } },
+    include: {
+      parent: {
+        select: { id: true, name: true },
+      },
+      _count: { select: { products: true, children: true } },
+    },
   });
 
   if (!category) notFound();
+
+  const parentOptions = await prisma.category.findMany({
+    where: { id: { not: id } },
+    select: {
+      id: true,
+      name: true,
+      parent: {
+        select: { name: true },
+      },
+    },
+    orderBy: [{ parentId: "asc" }, { name: "asc" }],
+  });
 
   async function updateWithId(formData: FormData) {
     "use server";
@@ -40,7 +57,7 @@ export default async function EditCategoryPage({ params }: { params: Promise<{ i
       <div>
         <h1 className="text-[24px] font-bold text-black">Edit Category</h1>
         <p className="text-[14px] text-zinc-500 mt-1">
-          Update the banner image and featured status for <strong>{category.name}</strong>.
+          Update the parent, category images, and featured status for <strong>{category.name}</strong>.
         </p>
       </div>
 
@@ -56,7 +73,39 @@ export default async function EditCategoryPage({ params }: { params: Promise<{ i
               <p className="mt-1 text-[11px] text-zinc-400">Name cannot be changed here</p>
             </div>
 
+            <div>
+              <label className="block text-[13px] font-semibold text-zinc-700 mb-2">
+                Parent Category
+              </label>
+              <select
+                name="parentId"
+                defaultValue={category.parentId ?? ""}
+                className="h-11 w-full rounded-xl border border-transparent bg-zinc-50 px-4 text-[14px] outline-none transition-all focus:border-black/10"
+              >
+                <option value="">None (Top-level category)</option>
+                {parentOptions.map((option) => (
+                  <option key={option.id} value={option.id}>
+                    {option.parent ? `${option.parent.name} / ${option.name}` : option.name}
+                  </option>
+                ))}
+              </select>
+              <p className="mt-1 text-[11px] text-zinc-400">
+                Assign a parent if this category should be nested as a subcategory.
+              </p>
+            </div>
+
             <CategoryBannerField defaultValue={category.banner ?? ""} />
+            <CategoryBannerField
+              defaultValue={(category as any).featuredBanner ?? ""}
+              fieldName="featuredBanner"
+              fieldId="featuredBanner"
+              label="Full Width Featured Banner URL"
+              uploadLabel="Upload Full Banner"
+              previewLabel="Full banner preview"
+              previewAlt="Full width featured banner preview"
+              urlHelpText="Upload or paste the full-width banner shown at the bottom of this featured category section."
+              uploadErrorLabel="Full banner"
+            />
             <CategoryCircleImageField defaultValue={(category as any).circleImage ?? ""} />
 
             <div className="flex items-start gap-3 rounded-xl bg-amber-50 border border-amber-100 px-4 py-4">
@@ -72,7 +121,7 @@ export default async function EditCategoryPage({ params }: { params: Promise<{ i
                   Feature on Homepage
                 </label>
                 <p className="text-[12px] text-amber-700 mt-0.5">
-                  Displays a dedicated section on the homepage with this category's banner and products.
+                  Displays a dedicated section on the homepage with this category&apos;s banner, products, and optional full-width bottom banner.
                   Requires a banner image to be set.
                 </p>
               </div>
@@ -100,8 +149,16 @@ export default async function EditCategoryPage({ params }: { params: Promise<{ i
               <span className="font-mono text-[12px] text-zinc-600">/{category.slug}</span>
             </div>
             <div className="flex items-center justify-between py-2 border-b border-zinc-50">
+              <span className="text-zinc-500">Parent</span>
+              <span className="font-medium text-black">{category.parent?.name ?? "None"}</span>
+            </div>
+            <div className="flex items-center justify-between py-2 border-b border-zinc-50">
               <span className="text-zinc-500">Products</span>
               <span className="font-medium text-black">{category._count.products}</span>
+            </div>
+            <div className="flex items-center justify-between py-2 border-b border-zinc-50">
+              <span className="text-zinc-500">Subcategories</span>
+              <span className="font-medium text-black">{category._count.children}</span>
             </div>
             <div className="flex items-center justify-between py-2 border-b border-zinc-50">
               <span className="text-zinc-500">Featured</span>
@@ -113,6 +170,12 @@ export default async function EditCategoryPage({ params }: { params: Promise<{ i
               <span className="text-zinc-500">Banner</span>
               <span className={`font-medium ${category.banner ? "text-emerald-600" : "text-zinc-400"}`}>
                 {category.banner ? "Set" : "Not set"}
+              </span>
+            </div>
+            <div className="flex items-center justify-between py-2">
+              <span className="text-zinc-500">Full Banner</span>
+              <span className={`font-medium ${(category as any).featuredBanner ? "text-emerald-600" : "text-zinc-400"}`}>
+                {(category as any).featuredBanner ? "Set" : "Not set"}
               </span>
             </div>
             <div className="flex items-center justify-between py-2">

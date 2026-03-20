@@ -1,6 +1,5 @@
 import React from "react";
-import { Plus, Search, Tag, Trash2, Star, Image, CheckCircle } from "lucide-react";
-import { deleteCategory } from "@/lib/actions";
+import { Tag, Star, Image, CheckCircle, Layers3 } from "lucide-react";
 import prisma from "@/lib/prisma";
 import Link from "next/link";
 import CategoryCreateForm from "@/app/components/CategoryCreateForm";
@@ -11,8 +10,13 @@ export const dynamic = "force-dynamic";
 async function getCategories() {
   try {
     return await prisma.category.findMany({
-      include: { _count: { select: { products: true } } },
-      orderBy: { createdAt: "desc" },
+      include: {
+        parent: {
+          select: { id: true, name: true },
+        },
+        _count: { select: { products: true, children: true } },
+      },
+      orderBy: [{ parentId: "asc" }, { name: "asc" }],
     });
   } catch (error) {
     console.error("Failed to fetch categories:", error);
@@ -22,6 +26,10 @@ async function getCategories() {
 
 export default async function CategoryPage() {
   const categories = await getCategories();
+  const parentOptions = categories.map((category) => ({
+    id: category.id,
+    name: category.parent ? `${category.parent.name} / ${category.name}` : category.name,
+  }));
 
   return (
     <div className="space-y-6">
@@ -36,35 +44,37 @@ export default async function CategoryPage() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
-        {/* Category List */}
         <div className="lg:col-span-2 space-y-4">
-          <div className="rounded-2xl border border-zinc-100 bg-white shadow-sm overflow-hidden">
+          <div className="overflow-hidden rounded-2xl border border-zinc-100 bg-white shadow-sm">
             {categories.length === 0 ? (
-              <div className="py-16 flex flex-col items-center justify-center text-center">
+              <div className="flex flex-col items-center justify-center py-16 text-center">
                 <div className="mb-3 rounded-full bg-zinc-100 p-4">
                   <Tag className="h-6 w-6 text-zinc-400" />
                 </div>
                 <p className="text-[15px] font-medium text-black">No categories yet</p>
-                <p className="text-[13px] text-zinc-500 mt-1">Create your first category to get started</p>
+                <p className="mt-1 text-[13px] text-zinc-500">Create your first category to get started</p>
               </div>
             ) : (
               <table className="w-full text-left">
-                <thead className="bg-zinc-50/50 border-b border-zinc-100">
+                <thead className="border-b border-zinc-100 bg-zinc-50/50">
                   <tr>
                     <th className="px-6 py-3 text-[11px] font-semibold uppercase tracking-wider text-zinc-500">Category</th>
+                    <th className="px-6 py-3 text-[11px] font-semibold uppercase tracking-wider text-zinc-500">Level</th>
                     <th className="px-6 py-3 text-[11px] font-semibold uppercase tracking-wider text-zinc-500">Banner</th>
+                    <th className="px-6 py-3 text-[11px] font-semibold uppercase tracking-wider text-zinc-500">Full Banner</th>
                     <th className="px-6 py-3 text-[11px] font-semibold uppercase tracking-wider text-zinc-500">Circle</th>
                     <th className="px-6 py-3 text-[11px] font-semibold uppercase tracking-wider text-zinc-500">Products</th>
+                    <th className="px-6 py-3 text-[11px] font-semibold uppercase tracking-wider text-zinc-500">Subcategories</th>
                     <th className="px-6 py-3 text-[11px] font-semibold uppercase tracking-wider text-zinc-500">Featured</th>
                     <th className="px-6 py-3 text-[11px] font-semibold uppercase tracking-wider text-zinc-500">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-50">
                   {categories.map((cat) => (
-                    <tr key={cat.id} className="group hover:bg-zinc-50/30 transition-colors">
+                    <tr key={cat.id} className="group transition-colors hover:bg-zinc-50/30">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="h-8 w-8 rounded-lg bg-zinc-100 flex items-center justify-center overflow-hidden">
+                          <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg bg-zinc-100">
                             {cat.banner ? (
                               <img src={cat.banner} alt={cat.name} className="h-full w-full object-cover" />
                             ) : (
@@ -73,9 +83,23 @@ export default async function CategoryPage() {
                           </div>
                           <div>
                             <p className="text-[14px] font-medium text-black">{cat.name}</p>
-                            <p className="text-[11px] text-zinc-400">/{cat.slug}</p>
+                            <p className="text-[11px] text-zinc-400">
+                              {cat.parent ? `${cat.parent.name} / ` : ""}/{cat.slug}
+                            </p>
                           </div>
                         </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        {cat.parent ? (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-zinc-100 px-2 py-1 text-[11px] font-medium text-zinc-700">
+                            <Layers3 className="h-3.5 w-3.5" />
+                            Subcategory
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-black px-2 py-1 text-[11px] font-medium text-white">
+                            Top Level
+                          </span>
+                        )}
                       </td>
                       <td className="px-6 py-4">
                         {cat.banner ? (
@@ -84,43 +108,54 @@ export default async function CategoryPage() {
                             Set
                           </span>
                         ) : (
-                          <span className="text-[12px] text-zinc-400">—</span>
+                          <span className="text-[12px] text-zinc-400">-</span>
                         )}
                       </td>
                       <td className="px-6 py-4">
-                        {(cat as any).circleImage ? (
-                          <div className="h-10 w-10 rounded-full bg-zinc-100 flex items-center justify-center overflow-hidden border border-zinc-200">
-                            <img src={(cat as any).circleImage} alt={cat.name} className="h-full w-full object-cover" />
+                        {(cat as { featuredBanner?: string | null }).featuredBanner ? (
+                          <span className="inline-flex items-center gap-1 text-[12px] font-medium text-emerald-600">
+                            <CheckCircle className="h-3.5 w-3.5" />
+                            Set
+                          </span>
+                        ) : (
+                          <span className="text-[12px] text-zinc-400">-</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4">
+                        {(cat as { circleImage?: string | null }).circleImage ? (
+                          <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-zinc-200 bg-zinc-100">
+                            <img
+                              src={(cat as { circleImage?: string | null }).circleImage ?? ""}
+                              alt={cat.name}
+                              className="h-full w-full object-cover"
+                            />
                           </div>
                         ) : (
-                          <span className="text-[12px] text-zinc-400">—</span>
+                          <span className="text-[12px] text-zinc-400">-</span>
                         )}
                       </td>
                       <td className="px-6 py-4 text-[14px] text-zinc-600">{cat._count.products}</td>
+                      <td className="px-6 py-4 text-[14px] text-zinc-600">{cat._count.children}</td>
                       <td className="px-6 py-4">
                         {cat.isFeatured ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 text-[11px] font-bold">
+                          <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-bold text-amber-600">
                             <Star className="h-3 w-3 fill-amber-500" />
                             Featured
                           </span>
                         ) : (
-                          <span className="text-[12px] text-zinc-400">—</span>
+                          <span className="text-[12px] text-zinc-400">-</span>
                         )}
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
                           <Link
                             href={`/dashboard/products/category/${cat.id}/edit`}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-zinc-200 text-[12px] font-medium text-zinc-700 hover:bg-zinc-50 transition"
+                            className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 px-3 py-1.5 text-[12px] font-medium text-zinc-700 transition hover:bg-zinc-50"
                           >
                             <Image className="h-3.5 w-3.5" />
                             Edit
                           </Link>
-                          <DeleteCategoryForm 
-                            id={cat.id} 
-                            name={cat.name} 
-                            productCount={cat._count.products} 
-                          />
+                          <DeleteCategoryForm id={cat.id} name={cat.name} productCount={cat._count.products} />
                         </div>
                       </td>
                     </tr>
@@ -131,10 +166,9 @@ export default async function CategoryPage() {
           </div>
         </div>
 
-        {/* Quick Add Form */}
-        <div className="rounded-2xl border border-zinc-100 bg-white p-6 shadow-sm h-fit">
-          <h3 className="text-[16px] font-bold text-black mb-6">Create Category</h3>
-          <CategoryCreateForm />
+        <div className="h-fit rounded-2xl border border-zinc-100 bg-white p-6 shadow-sm">
+          <h3 className="mb-6 text-[16px] font-bold text-black">Create Category</h3>
+          <CategoryCreateForm parentOptions={parentOptions} />
         </div>
       </div>
     </div>
