@@ -1,34 +1,42 @@
 import React from "react";
-import { Layout, Save } from "lucide-react";
+import prisma from "@/lib/prisma";
+import FeaturedSectionsClient from "@/app/components/FeaturedSectionsClient";
+import { MoveUp } from "lucide-react";
 
-export default function FeaturedContentPage() {
+export const dynamic = "force-dynamic";
+
+async function getHomeSections() {
+  try {
+    return await prisma.homeSection.findMany({
+      where: { isVisible: true },
+      orderBy: { order: "asc" },
+    });
+  } catch (error) {
+    console.error("Failed to fetch home sections:", error);
+    return [];
+  }
+}
+
+export default async function FeaturedContentPage() {
+  const sections = await getHomeSections();
+
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-[24px] font-bold text-black">Featured Sections</h1>
-        <p className="mt-1 text-[14px] text-zinc-500">
-          Manage the placement and visibility of home page promotional sections.
-        </p>
-      </div>
-
-      <div className="rounded-2xl border border-zinc-100 bg-white p-12 shadow-sm">
-        <div className="mx-auto flex max-w-[420px] flex-col items-center text-center">
-          <div className="mb-6 rounded-full bg-zinc-50 p-6">
-            <Layout className="h-10 w-10 text-zinc-300" />
-          </div>
-          <h2 className="text-[20px] font-bold text-black">
-            Section Layout Configurator
-          </h2>
-          <p className="mt-2 text-[15px] leading-relaxed text-zinc-500">
-            Customize the order of Shop Categories, Must-Haves, and Featured Banners here. This configurator is coming in the next update.
+    <div className="max-w-[1000px] mx-auto space-y-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-[24px] font-bold text-black flex items-center gap-2">
+            Home Page Sections
+            <span className="inline-flex h-6 items-center rounded-full bg-emerald-50 px-2 text-[11px] font-black uppercase text-emerald-600">
+              Live Content
+            </span>
+          </h1>
+          <p className="mt-1 text-[14px] text-zinc-500">
+            Design the layout of your landing page by toggling section visibility and reordering components.
           </p>
-          
-          <button className="mt-8 inline-flex h-11 items-center gap-2 rounded-xl bg-black px-6 text-[14px] font-medium text-white transition hover:bg-zinc-800">
-            <Save className="h-4 w-4" />
-            Enable Reordering
-          </button>
         </div>
       </div>
+
+      <FeaturedSectionsClient initialSections={sections} />
     </div>
   );
 }

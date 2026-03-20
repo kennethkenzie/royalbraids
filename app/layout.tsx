@@ -50,12 +50,16 @@ export const metadata: Metadata = {
 
 import { CartProvider } from "./context/CartContext";
 import CartDrawer from "./components/CartDrawer";
+import ChatBot from "./components/ChatBot";
+import prisma from "@/lib/prisma";
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const settings = await (prisma as any).siteSettings.findUnique({ where: { id: 1 } });
+
   return (
     <html lang="en">
       <body
@@ -65,6 +69,7 @@ export default function RootLayout({
         <CartProvider>
           {children}
           <CartDrawer />
+          <ChatBot logoUrl={settings?.logoUrl} />
         </CartProvider>
       </body>
     </html>

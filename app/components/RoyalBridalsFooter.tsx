@@ -5,6 +5,7 @@ import {
   Twitter,
   Youtube,
 } from "lucide-react";
+import Link from "next/link";
 import { cloudinaryImages } from "@/lib/cloudinary";
 
 export default function RoyalBridalsFooter() {
@@ -63,21 +64,21 @@ export default function RoyalBridalsFooter() {
           <p className="mt-3 text-[12px] text-white md:text-[14px]">+256 793695678 / +256 730 247 868</p>
 
           <div className="mt-6 space-y-3 text-[13px] md:space-y-4 md:text-[15px]">
-            <a href="/track-order" className="block hover:text-white/70">
+            <Link href="/track-order" className="block hover:text-white/70">
               Order Status
-            </a>
+            </Link>
             <a href="#" className="block hover:text-white/70">
               Shipping Information
             </a>
             <a href="#" className="block hover:text-white/70">
               Returns
             </a>
-            <a href="#" className="block hover:text-white/70">
+            <Link href="/contact" className="block hover:text-white/70">
               Contact Us
-            </a>
-            <a href="#" className="block hover:text-white/70">
+            </Link>
+            <Link href="/help" className="block hover:text-white/70">
               Help & FAQs
-            </a>
+            </Link>
             <a href="#" className="block hover:text-white/70">
               My Account
             </a>

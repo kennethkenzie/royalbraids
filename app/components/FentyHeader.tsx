@@ -6,14 +6,34 @@ import { cloudinaryImages } from "@/lib/cloudinary";
 import { useCart } from "@/app/context/CartContext";
 import Link from "next/link";
 
-export default function FentyHeader() {
+interface HeaderProps {
+  navLinks?: { name: string; href: string }[];
+  promoMessages?: string[];
+  settings?: { logoUrl?: string; ugFlagUrl?: string };
+}
+
+export default function FentyHeader({ 
+  navLinks = [], 
+  promoMessages = [],
+  settings = {}
+}: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { setIsCartOpen, totalItems } = useCart();
-  const navLinks = ["Closure", "Crochet Braid", "Weaves", "Braids", "Blog", "Contact Us", "Help"];
-  const promoMessages = [
+
+  const activePromoMessages = promoMessages.length > 0 ? promoMessages : [
     "Free delivery in Kampala on qualifying orders",
     "New premium braid textures now available",
     "Book bulk orders for salons and resellers",
+  ];
+
+  const activeNavLinks = navLinks.length > 0 ? navLinks : [
+    { name: "Closure", href: "/inventory?category=closure" },
+    { name: "Crochet Braid", href: "/inventory?category=crochet-braid" },
+    { name: "Weaves", href: "/inventory?category=weaves" },
+    { name: "Braids", href: "/inventory?category=braids" },
+    { name: "Blog", href: "/blog" },
+    { name: "Contact Us", href: "/contact" },
+    { name: "Help", href: "/help" },
   ];
 
   return (
@@ -24,9 +44,9 @@ export default function FentyHeader() {
           <div className="marquee-track">
             {[0, 1].map((copyIndex) => (
               <div key={copyIndex} className="marquee-group">
-                {promoMessages.map((message) => (
+                {activePromoMessages.map((message, mIdx) => (
                   <span
-                    key={`${copyIndex}-${message}`}
+                    key={`${copyIndex}-${mIdx}`}
                     className="flex items-center gap-4 whitespace-nowrap text-[11px] font-medium uppercase tracking-[0.22em] md:text-xs"
                   >
                     <span className="text-white/55">*</span>
@@ -51,7 +71,7 @@ export default function FentyHeader() {
             </button>
             <div className="hidden items-center gap-2 md:flex">
               <img 
-                src={cloudinaryImages.ugFlag} 
+                src={settings.ugFlagUrl || cloudinaryImages.ugFlag} 
                 alt="UG Flag" 
                 className="h-3 w-4.5 overflow-hidden rounded-[1px] object-cover"
               />
@@ -62,15 +82,24 @@ export default function FentyHeader() {
           </div>
 
           {/* Center logo */}
-          <div className="flex-1 text-center">
-            <h1 className="select-none text-[13px] font-semibold font-sans uppercase tracking-[0.2em] text-black md:text-[24px] md:tracking-[0.55em] whitespace-nowrap">
-              ROYAL BRAIDS LTD
-            </h1>
+          <div className="flex-1 text-center py-2 flex justify-center">
+            <Link href="/" className="flex items-center gap-4 group">
+              {settings.logoUrl && (
+                <img 
+                  src={settings.logoUrl} 
+                  alt="Royal Braids Logo" 
+                  className="h-10 md:h-14 w-auto object-contain transition-transform group-hover:scale-105" 
+                />
+              )}
+              <h1 className="select-none text-[13px] font-semibold font-sans uppercase tracking-[0.2em] text-black md:text-[22px] md:tracking-[0.4em] whitespace-nowrap">
+                ROYAL BRAIDS LTD
+              </h1>
+            </Link>
           </div>
 
           {/* Right icons */}
           <div className="flex min-w-[80px] items-center justify-end gap-3 text-sm text-black md:min-w-[180px] md:gap-4">
-            <Link href="/signin" className="flex items-center gap-1 hover:opacity-70 transition-colors">
+            <Link href="/signin" className="flex items-center gap-1 hover:opacity-70 transition-colors text-black">
               <User className="h-4 w-4 stroke-[1.6]" />
               <span className="hidden md:inline">Sign In</span>
             </Link>
@@ -99,15 +128,15 @@ export default function FentyHeader() {
         </div>
 
         {/* Desktop Navigation */}
-        <nav className="hidden items-center justify-center gap-12 border-b border-zinc-100 py-4 text-[18px] font-light font-sans text-black lg:flex">
-          {navLinks.map((item) => (
-            <a
-              key={item}
-              href="#"
-              className="transition hover:opacity-70"
+        <nav className="hidden items-center justify-center gap-10 border-b border-zinc-100 py-4 text-[17px] font-light font-sans text-black lg:flex uppercase tracking-widest">
+          {activeNavLinks.map((item, idx) => (
+            <Link
+              key={`${item.name}-${idx}`}
+              href={item.href}
+              className="transition hover:opacity-70 text-black decoration-zinc-200 underline-offset-8 hover:underline"
             >
-              {item}
-            </a>
+              {item.name}
+            </Link>
           ))}
         </nav>
       </div>
@@ -126,16 +155,16 @@ export default function FentyHeader() {
               <X className="h-6 w-6 text-black stroke-[1.5]" />
             </button>
           </div>
-          <nav className="flex flex-col gap-6 text-[20px] font-light font-sans text-black">
-            {navLinks.map((item) => (
-              <a
-                key={item}
-                href="#"
+          <nav className="flex flex-col gap-6 text-[18px] font-light font-sans text-black uppercase tracking-widest">
+            {activeNavLinks.map((item, idx) => (
+              <Link
+                key={`${item.name}-${idx}-mobile`}
+                href={item.href}
                 className="transition hover:opacity-60"
                 onClick={() => setIsMenuOpen(false)}
               >
-                {item}
-              </a>
+                {item.name}
+              </Link>
             ))}
           </nav>
           <div className="mt-auto pt-8 border-t border-zinc-100 italic text-[14px] text-zinc-500">
