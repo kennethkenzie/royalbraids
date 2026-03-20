@@ -4,6 +4,7 @@ import { deleteCategory } from "@/lib/actions";
 import prisma from "@/lib/prisma";
 import Link from "next/link";
 import CategoryCreateForm from "@/app/components/CategoryCreateForm";
+import DeleteCategoryForm from "@/app/components/DeleteCategoryForm";
 
 export const dynamic = "force-dynamic";
 
@@ -115,22 +116,11 @@ export default async function CategoryPage() {
                             <Image className="h-3.5 w-3.5" />
                             Edit
                           </Link>
-                          <form 
-                            action={deleteCategory.bind(null, cat.id)}
-                            onSubmit={(e) => {
-                              if (!confirm(`Are you sure you want to delete "${cat.name}"? This will also delete all ${cat._count.products} products in this category.`)) {
-                                e.preventDefault();
-                              }
-                            }}
-                          >
-                            <button
-                              type="submit"
-                              className="p-2 text-zinc-400 hover:text-red-500 transition"
-                              title="Delete category and products"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </button>
-                          </form>
+                          <DeleteCategoryForm 
+                            id={cat.id} 
+                            name={cat.name} 
+                            productCount={cat._count.products} 
+                          />
                         </div>
                       </td>
                     </tr>

@@ -10,7 +10,8 @@ import {
 } from "lucide-react";
 import prisma from "@/lib/prisma";
 import Link from "next/link";
-import { deleteProduct, unpublishProduct, publishProduct } from "@/lib/actions";
+import { unpublishProduct, publishProduct } from "@/lib/actions";
+import DeleteProductForm from "@/app/components/DeleteProductForm";
 
 export const dynamic = "force-dynamic";
 
@@ -177,22 +178,7 @@ export default async function ProductsPage() {
                             </button>
                           </form>
                         )}
-                        <form 
-                          action={deleteProduct.bind(null, product.id)}
-                          onSubmit={(e) => {
-                            if (!confirm(`Are you sure you want to delete "${product.name}"? This action cannot be undone.`)) {
-                              e.preventDefault();
-                            }
-                          }}
-                        >
-                          <button
-                            type="submit"
-                            className="p-2 text-zinc-400 transition-colors hover:text-red-500"
-                            title="Delete product"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        </form>
+                        <DeleteProductForm id={product.id} name={product.name} />
                       </div>
                     </td>
                   </tr>
