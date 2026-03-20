@@ -30,7 +30,7 @@ function TrackOrderContent() {
 
   useEffect(() => {
     if (orderNumberParam) {
-      handleSearch(null, orderNumberParam);
+      handleSearch(undefined, orderNumberParam);
     }
   }, [orderNumberParam]);
 
