@@ -19,7 +19,7 @@ export default function RoyalBridalsFooter() {
             </h2>
 
             <p className="mt-3 text-[12px] leading-6 text-white/90 md:text-[14px]">
-              Keep up with all things Royal Bridals Uganda + save on your next
+              Keep up with all things Royal Braids Ltd Uganda + save on your next
               order.
             </p>
 
@@ -36,7 +36,7 @@ export default function RoyalBridalsFooter() {
             </div>
 
             <p className="mt-5 max-w-[500px] text-[10px] leading-5 text-white/80 md:text-[11px]">
-              By subscribing to Royal Bridals Uganda, you agree to our Terms of
+              By subscribing to Royal Braids Ltd Uganda, you agree to our Terms of
               Use and acknowledge our Privacy Policy and consent to receive a
               varying number of marketing messages via email and text. Consent
               is not a condition of any purchase.
@@ -45,7 +45,7 @@ export default function RoyalBridalsFooter() {
 
           <div className="mt-10 md:mt-16">
             <h3 className="text-[18px] font-medium uppercase tracking-[0.3em] text-white md:text-[30px] md:tracking-[0.55em]">
-              Royal Bridals 
+              Royal Braids Ltd 
             </h3>
           </div>
         </div>
@@ -63,7 +63,7 @@ export default function RoyalBridalsFooter() {
           <p className="mt-3 text-[12px] text-white md:text-[14px]">+256 793695678 / +256 730 247 868</p>
 
           <div className="mt-6 space-y-3 text-[13px] md:space-y-4 md:text-[15px]">
-            <a href="#" className="block hover:text-white/70">
+            <a href="/track-order" className="block hover:text-white/70">
               Order Status
             </a>
             <a href="#" className="block hover:text-white/70">
@@ -107,7 +107,7 @@ export default function RoyalBridalsFooter() {
           <h3 className="text-[16px] font-bold uppercase md:text-[18px]">About</h3>
 
           <p className="mt-4 max-w-[420px] text-[12px] leading-6 text-white/90 md:text-[14px]">
-            Royal Bridals Uganda is inspired by timeless elegance and modern
+            Royal Braids Ltd Uganda is inspired by timeless elegance and modern
             bridal fashion, offering beautiful gowns, accessories, and styling
             pieces that make every bride feel confident, graceful, and radiant.
           </p>
@@ -132,7 +132,7 @@ export default function RoyalBridalsFooter() {
         <div className="col-span-2 flex items-start justify-center px-6 py-6 md:px-10 lg:col-span-1 lg:justify-end lg:py-10">
           <img
             src={cloudinaryImages.footerFeature}
-            alt="Royal Bridals Uganda"
+            alt="Royal Braids Ltd Uganda"
             className="h-auto max-h-[180px] w-full max-w-[180px] object-contain md:max-h-[300px] md:max-w-[300px]"
           />
         </div>

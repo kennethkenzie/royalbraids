@@ -2,6 +2,7 @@
 
 import prisma from "./prisma";
 import { revalidatePath } from "next/cache";
+import crypto from 'node:crypto';
 
 export async function createProduct(formData: any) {
   try {
@@ -473,3 +474,184 @@ export async function deleteUnit(id: number) {
     throw new Error(error?.message || "Failed to delete unit.");
   }
 }
+
+// ──── Reel Actions ────
+
+export async function createReel(formData: FormData) {
+  try {
+    const video = formData.get("video") as string;
+    const poster = formData.get("poster") as string;
+    const productImage = formData.get("productImage") as string;
+    const title = formData.get("title") as string;
+    const price = formData.get("price") as string;
+    const link = formData.get("link") as string;
+
+    if (!video || !productImage || !title || !price) {
+      throw new Error("Missing required fields for Reel.");
+    }
+
+    await prisma.$executeRawUnsafe(
+      `INSERT INTO "Reel" (video, poster, "productImage", title, price, link, "updatedAt") 
+       VALUES ($1, $2, $3, $4, $5, $6, NOW())`,
+      video,
+      poster || null,
+      productImage,
+      title,
+      price,
+      link || "/products"
+    );
+
+    revalidatePath("/dashboard/content/reels");
+    revalidatePath("/");
+    return { success: true };
+  } catch (error: any) {
+    console.error("Failed to create reel:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+export async function deleteReel(id: number) {
+  try {
+    await prisma.$executeRawUnsafe(`DELETE FROM "Reel" WHERE id = $1`, id);
+    revalidatePath("/dashboard/content/reels");
+    revalidatePath("/");
+    return { success: true };
+  } catch (error: any) {
+    console.error("Failed to delete reel:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+// ──── Order Actions ────
+
+export async function createOrder(data: any) {
+  try {
+    const orderNumber = `RB-${Math.floor(100000 + Math.random() * 900000)}`;
+    const { items, customerName, email, phone, address, city, totalPrice } = data;
+
+    // Use raw SQL to insert the order
+    await prisma.$executeRawUnsafe(`
+      INSERT INTO "Order" ("orderNumber", "totalCents", "status", "customerName", "email", "phone", "address", "city", "createdAt", "updatedAt")
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW())
+    `, orderNumber, parseInt(totalPrice), "Pending", customerName, email, phone, address, city);
+
+    // Get the newly created order's ID
+    const orders: any[] = await prisma.$queryRawUnsafe(`SELECT "id" FROM "Order" WHERE "orderNumber" = $1 LIMIT 1`, orderNumber);
+    if (orders.length === 0) throw new Error("Failed to retrieve created order");
+    const orderId = orders[0].id;
+
+    // Insert order items
+    for (const item of items) {
+      await prisma.$executeRawUnsafe(`
+        INSERT INTO "OrderItem" ("productId", "quantity", "price", "orderId")
+        VALUES ($1, $2, $3, $4)
+      `, item.id, item.quantity, item.price, orderId);
+    }
+
+    return { success: true, orderNumber };
+  } catch (err: any) {
+    console.error("Order creation error:", err);
+    return { success: false, error: err.message || "Failed to create order" };
+  }
+}
+
+export async function getOrder(orderNumber: string) {
+  try {
+    const orders: any[] = await prisma.$queryRawUnsafe(`
+      SELECT * FROM "Order" WHERE "orderNumber" = $1 LIMIT 1
+    `, orderNumber);
+    
+    if (orders.length === 0) return null;
+    
+    const order = orders[0];
+    
+    // Get items for this order
+    const items: any[] = await prisma.$queryRawUnsafe(`
+      SELECT oi.*, p.name, p.image 
+      FROM "OrderItem" oi
+      JOIN "Product" p ON oi."productId" = p.id
+      WHERE oi."orderId" = $1
+    `, order.id);
+    
+    return { ...order, items };
+  } catch (err) {
+    console.error("Error fetching order:", err);
+    return null;
+  }
+}
+
+export async function updateOrderStatus(orderId: number, status: string) {
+  try {
+    await prisma.$executeRawUnsafe(`
+      UPDATE "Order" SET "status" = $1, "updatedAt" = NOW() WHERE "id" = $2
+    `, status, orderId);
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
+
+// ──── Client Auth Actions ────
+
+function hashPassword(password: string) {
+  return crypto.createHash('sha256').update(password).digest('hex');
+}
+
+export async function registerClient(data: any) {
+  try {
+    const fullName = data.fullName;
+    const phone = data.phone.trim();
+    const password = data.password;
+    const hashedPassword = hashPassword(password);
+
+    console.log(`Attempting to register user: ${phone}`);
+
+    // Check if user already exists
+    const existing: any[] = await prisma.$queryRawUnsafe(`SELECT "id" FROM "User" WHERE "phone" = $1 LIMIT 1`, phone);
+    if (existing.length > 0) {
+      return { success: false, error: "A user with this phone number already exists." };
+    }
+
+    // Insert user
+    await prisma.$executeRawUnsafe(`
+      INSERT INTO "User" ("fullName", "phone", "password", "createdAt", "updatedAt")
+      VALUES ($1, $2, $3, NOW(), NOW())
+    `, fullName, phone, hashedPassword);
+
+    console.log(`User registered successfully: ${phone}`);
+    return { success: true };
+  } catch (err: any) {
+    console.error("Registration error:", err);
+    return { success: false, error: err.message || "Failed to create account" };
+  }
+}
+
+export async function signinClient(data: any) {
+  try {
+    const phone = data.phone.trim();
+    const password = data.password;
+    const hashedPassword = hashPassword(password);
+
+    console.log(`Login attempt for: ${phone}`);
+
+    const users: any[] = await prisma.$queryRawUnsafe(`
+      SELECT "id", "fullName", "phone" FROM "User" 
+      WHERE "phone" = $1 AND "password" = $2 LIMIT 1
+    `, phone, hashedPassword);
+
+    if (users.length === 0) {
+      console.log(`Login failed for: ${phone}`);
+      return { success: false, error: "Invalid phone number or password." };
+    }
+
+    console.log(`Login successful for: ${phone}`);
+    // Success - user is authenticated
+    return { success: true, user: users[0] };
+  } catch (err: any) {
+    console.error("Signin error:", err);
+    return { success: false, error: "Authentication failed. Server issue." };
+  }
+}
+
+
+

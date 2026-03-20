@@ -3,9 +3,12 @@
 import { Heart, ShoppingBag, User, Search, Menu, X } from "lucide-react";
 import { useState } from "react";
 import { cloudinaryImages } from "@/lib/cloudinary";
+import { useCart } from "@/app/context/CartContext";
+import Link from "next/link";
 
 export default function FentyHeader() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { setIsCartOpen, totalItems } = useCart();
   const navLinks = ["Closure", "Crochet Braid", "Weaves", "Braids", "Blog", "Contact Us", "Help"];
   const promoMessages = [
     "Free delivery in Kampala on qualifying orders",
@@ -61,16 +64,16 @@ export default function FentyHeader() {
           {/* Center logo */}
           <div className="flex-1 text-center">
             <h1 className="select-none text-[13px] font-semibold font-sans uppercase tracking-[0.2em] text-black md:text-[24px] md:tracking-[0.55em] whitespace-nowrap">
-              ROYAL BRAIDS
+              ROYAL BRAIDS LTD
             </h1>
           </div>
 
           {/* Right icons */}
           <div className="flex min-w-[80px] items-center justify-end gap-3 text-sm text-black md:min-w-[180px] md:gap-4">
-            <button className="flex items-center gap-1 hover:opacity-70">
+            <Link href="/signin" className="flex items-center gap-1 hover:opacity-70 transition-colors">
               <User className="h-4 w-4 stroke-[1.6]" />
               <span className="hidden md:inline">Sign In</span>
-            </button>
+            </Link>
 
             <button className="hover:opacity-70" aria-label="Search">
               <Search className="h-4 w-4 stroke-[1.6]" />
@@ -80,8 +83,17 @@ export default function FentyHeader() {
               <Heart className="h-4 w-4 stroke-[1.6]" />
             </button>
 
-            <button className="hover:opacity-70" aria-label="Shopping bag">
-              <ShoppingBag className="h-4 w-4 stroke-[1.6]" />
+            <button 
+              onClick={() => setIsCartOpen(true)}
+              className="group relative flex h-10 w-10 items-center justify-center rounded-full hover:bg-zinc-50 transition-colors" 
+              aria-label="Shopping bag"
+            >
+              <ShoppingBag className="h-5 w-5 stroke-[1.6] text-black" />
+              {totalItems > 0 && (
+                <span className="absolute right-1 top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-black px-[4px] text-[10px] font-black leading-none text-white ring-2 ring-white transition-all group-hover:scale-110">
+                  {totalItems}
+                </span>
+              )}
             </button>
           </div>
         </div>

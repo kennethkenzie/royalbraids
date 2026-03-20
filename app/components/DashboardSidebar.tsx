@@ -21,7 +21,14 @@ import {
   Plus,
   Palette,
   Ruler,
-  Boxes
+  Boxes,
+  Globe,
+  Monitor,
+  Layout,
+  FileText,
+  Image as ImageIcon,
+  ShieldCheck,
+  Film
 } from "lucide-react";
 
 interface DashboardSidebarProps {
@@ -45,6 +52,17 @@ const navItems = [
       { name: "Colors", href: "/dashboard/products/colors", icon: Palette },
       { name: "Units", href: "/dashboard/products/units", icon: Boxes },
       { name: "Size Guide", href: "/dashboard/products/size-guide", icon: Ruler },
+    ]
+  },
+  { 
+    name: "Website Content", 
+    icon: Monitor,
+    children: [
+      { name: "Hero Carousel", href: "/dashboard/content/hero", icon: ImageIcon },
+      { name: "Product Reels", href: "/dashboard/content/reels", icon: Film },
+      { name: "Featured Sections", href: "/dashboard/content/featured", icon: Layout },
+      { name: "Privacy Policy", href: "/dashboard/content/privacy", icon: ShieldCheck },
+      { name: "Terms of Service", href: "/dashboard/content/terms", icon: FileText },
     ]
   },
   { name: "Orders", href: "/dashboard/orders", icon: ShoppingCart },
@@ -83,7 +101,7 @@ export default function DashboardSidebar({ isOpen, onClose }: DashboardSidebarPr
             <Link href="/" className="flex items-center gap-2" onClick={onClose}>
               <Sparkles className="h-5 w-5 text-zinc-400" />
               <span className="text-[14px] font-semibold uppercase tracking-[0.3em] text-white">
-                ROYAL BRAIDS
+                ROYAL BRAIDS LTD
               </span>
             </Link>
             <button 

@@ -2,6 +2,7 @@ import { ArrowLeft, ArrowRight, Star } from "lucide-react";
 import prisma from "@/lib/prisma";
 import Link from "next/link";
 import { unstable_noStore as noStore } from "next/cache";
+import AddToCartButton from "./AddToCartButton";
 
 async function getLatestProducts() {
   noStore();
@@ -62,7 +63,7 @@ export default async function LatestProductsSection() {
 
               <div className="flex flex-col px-8 py-10">
                 <p className="text-[13px] font-bold uppercase tracking-[0.2em] text-white/60">
-                  Royal Braids Studio
+                  Royal Braids Ltd
                 </p>
                 <h3 className="mt-2 text-[28px] font-black uppercase leading-[1.1] text-white">
                   JUST IN. SHOP THE NEW ARRIVALS.
@@ -96,11 +97,9 @@ export default async function LatestProductsSection() {
                   {/* Image */}
                   <div className={`relative h-[480px] overflow-hidden bg-[#e8e5e0] transition-transform duration-500 group-hover:translate-y-[-2px] rounded-[2px]`}>
                     <div className="absolute left-3 top-3 z-10 flex flex-wrap gap-2">
-                      {product.status && (
-                        <span className="bg-white px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-black shadow-sm">
-                          New
-                        </span>
-                      )}
+                      <span className="bg-white px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-black shadow-sm">
+                        New
+                      </span>
                       {product.category?.name && (
                         <span className="bg-black px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-white shadow-sm">
                           {product.category.name}
@@ -121,6 +120,20 @@ export default async function LatestProductsSection() {
                         </span>
                       </div>
                     )}
+
+                    {/* Add to Cart Overlay */}
+                    <div className="absolute inset-x-0 bottom-6 z-20 flex justify-center px-6 opacity-0 translate-y-4 transition-all duration-300 group-hover:opacity-100 group-hover:translate-y-0">
+                      <AddToCartButton 
+                        product={{
+                          id: product.id,
+                          name: product.name,
+                          price: product.priceInCents,
+                          image: product.image
+                        }} 
+                        className="h-12 w-full rounded-none shadow-xl transform active:scale-95 transition-transform"
+                        showText={true}
+                      />
+                    </div>
 
                     <div className="absolute inset-0 bg-black/5 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
                   </div>

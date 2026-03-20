@@ -32,7 +32,7 @@ export default function SettingsPage() {
                 </label>
                 <input
                   type="text"
-                  defaultValue="Royal Braids"
+                  defaultValue="Royal Braids Ltd"
                   className="h-11 w-full rounded-xl border border-transparent bg-zinc-50 px-4 text-[14px] outline-none transition-all focus:border-black/10"
                 />
               </div>
