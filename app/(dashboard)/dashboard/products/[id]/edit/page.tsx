@@ -31,12 +31,16 @@ export default async function EditProductPage({
     notFound();
   }
 
-  const [units, categories] = await Promise.all([
+  const [units, categories, colors] = await Promise.all([
     prisma.unit.findMany({
       orderBy: { name: "asc" },
     }),
     prisma.category.findMany({
       select: { id: true, name: true },
+      orderBy: { name: "asc" },
+    }),
+    prisma.color.findMany({
+      select: { id: true, name: true, hex: true, code: true },
       orderBy: { name: "asc" },
     }),
   ]);
@@ -46,6 +50,7 @@ export default async function EditProductPage({
       mode="edit"
       units={units}
       categories={categories}
+      availableColors={colors}
       initialData={{
         id: product.id,
         name: product.name,
@@ -63,7 +68,12 @@ export default async function EditProductPage({
                 value: variation.value,
               }))
             : [{ id: 1, name: "Length", value: "24 inch" }],
-        selectedColors: product.colors.map((color) => color.id),
+        selectedColors: product.colors.map((color) => ({
+          id: color.id,
+          name: color.name,
+          hex: color.hex,
+          code: color.code,
+        })),
         imageUrl: product.image || "",
       }}
     />

@@ -26,13 +26,17 @@ export async function createProduct(formData: any) {
 
     // Handle colors - ensure they exist
     const colorConnections = await Promise.all(
-      colors.map(async (c: { name: string; hex: string }) => {
+      colors.map(async (c: { name: string; hex: string; code?: string }) => {
         return await prisma.color.upsert({
           where: { hex: c.hex },
-          update: {},
+          update: {
+            name: c.name,
+            code: c.code || null,
+          },
           create: {
             name: c.name,
             hex: c.hex,
+            code: c.code || null,
           },
         });
       })
@@ -122,15 +126,17 @@ export async function updateProduct(formData: any) {
     });
 
     const colorConnections = await Promise.all(
-      colors.map(async (c: { name: string; hex: string }) => {
+      colors.map(async (c: { name: string; hex: string; code?: string }) => {
         return prisma.color.upsert({
           where: { hex: c.hex },
           update: {
             name: c.name,
+            code: c.code || null,
           },
           create: {
             name: c.name,
             hex: c.hex,
+            code: c.code || null,
           },
         });
       })
@@ -652,6 +658,5 @@ export async function signinClient(data: any) {
     return { success: false, error: "Authentication failed. Server issue." };
   }
 }
-
 
 
