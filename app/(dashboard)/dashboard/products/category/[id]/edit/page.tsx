@@ -2,14 +2,21 @@ import prisma from "@/lib/prisma";
 import { updateCategory } from "@/lib/actions";
 import Link from "next/link";
 import { ArrowLeft, Image } from "lucide-react";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import CategoryBannerField from "@/app/components/CategoryBannerField";
 import CategoryCircleImageField from "@/app/components/CategoryCircleImageField";
 
 export const dynamic = "force-dynamic";
 
-export default async function EditCategoryPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function EditCategoryPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams?: Promise<{ error?: string }>;
+}) {
   const { id: idParam } = await params;
+  const resolvedSearchParams = await searchParams;
   const id = parseInt(idParam);
   if (isNaN(id)) notFound();
 
@@ -39,7 +46,12 @@ export default async function EditCategoryPage({ params }: { params: Promise<{ i
 
   async function updateWithId(formData: FormData) {
     "use server";
-    await updateCategory(id, formData);
+    try {
+      await updateCategory(id, formData);
+    } catch (error: any) {
+      const message = encodeURIComponent(error?.message || "Failed to update category.");
+      redirect(`/dashboard/products/category/${id}/edit?error=${message}`);
+    }
   }
 
   return (
@@ -65,12 +77,34 @@ export default async function EditCategoryPage({ params }: { params: Promise<{ i
         {/* Edit Form */}
         <div className="rounded-2xl border border-zinc-100 bg-white p-6 shadow-sm">
           <form action={updateWithId} className="space-y-6">
+            {resolvedSearchParams?.error ? (
+              <div className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-[13px] text-red-600">
+                {resolvedSearchParams.error}
+              </div>
+            ) : null}
             <div>
-              <label className="block text-[13px] font-semibold text-zinc-700 mb-1">Category Name</label>
-              <p className="h-11 flex items-center rounded-xl bg-zinc-50 px-4 text-[14px] text-zinc-500 border border-zinc-100">
-                {category.name}
-              </p>
-              <p className="mt-1 text-[11px] text-zinc-400">Name cannot be changed here</p>
+              <label className="block text-[13px] font-semibold text-zinc-700 mb-2">Category Name</label>
+              <input
+                type="text"
+                name="name"
+                defaultValue={category.name}
+                required
+                className="h-11 w-full rounded-xl border border-transparent bg-zinc-50 px-4 text-[14px] outline-none transition-all focus:border-black/10"
+                placeholder="e.g. Premium Braiding Hair"
+              />
+              <p className="mt-1 text-[11px] text-zinc-400">Updating the name will also automatically update the URL slug</p>
+            </div>
+
+            <div>
+              <label className="block text-[13px] font-semibold text-zinc-700 mb-2">Category Description (for banner)</label>
+              <textarea
+                name="description"
+                defaultValue={(category as any).description || ""}
+                rows={3}
+                className="w-full rounded-xl border border-transparent bg-zinc-50 px-4 py-3 text-[14px] outline-none transition-all focus:border-black/10 min-h-[100px]"
+                placeholder="Enter a description to be shown on the category banner..."
+              />
+              <p className="mt-1 text-[11px] text-zinc-400">This description will be shown on the home page category banner circle.</p>
             </div>
 
             <div>

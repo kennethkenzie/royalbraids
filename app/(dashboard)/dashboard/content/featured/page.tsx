@@ -5,15 +5,40 @@ import { MoveUp } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
+const defaultSections = [
+  { type: "HeroCarousel", title: "Hero Carousel", order: 0 },
+  { type: "CategoryCircles", title: "Category Circles", order: 1 },
+  { type: "FeaturedCategories", title: "Featured Categories", order: 2 },
+  { type: "FeaturedProducts", title: "Featured Products", order: 3 },
+  { type: "LatestProducts", title: "Latest Products", order: 4 },
+];
+
 async function getHomeSections() {
   try {
+    await Promise.all(
+      defaultSections.map((section) =>
+        prisma.homeSection.upsert({
+          where: { type: section.type },
+          update: {},
+          create: {
+            ...section,
+            isVisible: true,
+          },
+        })
+      )
+    );
+
     return await prisma.homeSection.findMany({
-      where: { isVisible: true },
       orderBy: { order: "asc" },
     });
   } catch (error) {
     console.error("Failed to fetch home sections:", error);
-    return [];
+    return defaultSections.map((section) => ({
+      id: section.order + 1,
+      ...section,
+      isVisible: true,
+      updatedAt: new Date(),
+    }));
   }
 }
 

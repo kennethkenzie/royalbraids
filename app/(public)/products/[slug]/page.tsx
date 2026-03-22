@@ -3,6 +3,7 @@ import prisma from "@/lib/prisma";
 import ProductDetailView from "@/app/components/ProductDetailView";
 import RecentlyViewed from "@/app/components/RecentlyViewed";
 import ProductHistoryTracker from "@/app/components/ProductHistoryTracker";
+import { getPrimaryUnitOption } from "@/lib/product-unit-options";
 
 export const dynamic = "force-dynamic";
 
@@ -20,6 +21,9 @@ export default async function ProductDetailPage({
     include: {
       category: true,
       colors: true,
+      unitOptions: {
+        orderBy: { sortOrder: "asc" },
+      },
       variations: true,
     },
   });
@@ -38,6 +42,9 @@ export default async function ProductDetailPage({
       include: {
         category: true,
         colors: true,
+        unitOptions: {
+          orderBy: { sortOrder: "asc" },
+        },
       },
       orderBy: {
         updatedAt: "desc",
@@ -52,6 +59,9 @@ export default async function ProductDetailPage({
       include: {
         category: true,
         colors: true,
+        unitOptions: {
+          orderBy: { sortOrder: "asc" },
+        },
       },
       orderBy: {
         updatedAt: "desc",
@@ -65,19 +75,23 @@ export default async function ProductDetailPage({
       items.findIndex((candidate) => candidate.id === item.id) === index,
   );
 
-  const recentlyViewedItems = recentProducts.map((item) => ({
-    id: item.id,
-    slug: item.slug,
-    image: item.image,
-    title: item.name,
-    shades:
-      item.colors.length > 0
-        ? `${item.colors.length} color${item.colors.length === 1 ? "" : "s"}`
-        : undefined,
-    price: `UGX ${item.priceInCents.toLocaleString()}`,
-    tag1: "NEW",
-    tag2: item.category.name.toUpperCase(),
-  }));
+  const recentlyViewedItems = recentProducts.map((item) => {
+    const primaryUnitOption = getPrimaryUnitOption(item);
+
+    return {
+      id: item.id,
+      slug: item.slug,
+      image: item.image,
+      title: item.name,
+      shades:
+        item.colors.length > 0
+          ? `${item.colors.length} color${item.colors.length === 1 ? "" : "s"}`
+          : undefined,
+      price: `UGX ${primaryUnitOption.priceInCents.toLocaleString()}`,
+      tag1: "NEW",
+      tag2: item.category.name.toUpperCase(),
+    };
+  });
 
   return (
     <>

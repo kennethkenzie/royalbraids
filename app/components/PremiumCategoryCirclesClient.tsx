@@ -54,7 +54,7 @@ export default function PremiumCategoryCirclesClient({
               transition={{ duration: 0.55, delay: index * 0.08 }}
             >
               <Link
-                href={`/inventory?category=${category.slug}`}
+                href={`/products?category=${category.slug}`}
                 className="group block"
                 aria-label={category.name}
               >

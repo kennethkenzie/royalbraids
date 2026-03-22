@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, Star } from "lucide-react";
 import Link from "next/link";
+import { TextAnimation } from "./ScrollAnimation";
 
 interface MoodProduct {
   id: number;
@@ -10,14 +11,15 @@ interface MoodProduct {
   name: string;
   priceInCents: number;
   image: string | null;
+  hoverImage?: string | null;
   category?: { name: string } | null;
 }
 
 function ProductCard({ product }: { product: MoodProduct }) {
   return (
-    <article className="group snap-start shrink-0 basis-[300px] sm:basis-[340px] xl:basis-[380px]">
+    <article className="group snap-start shrink-0 basis-[360px] sm:basis-[420px] xl:basis-[480px]">
       <div
-        className={`relative h-[480px] overflow-hidden bg-[#e8e5e0] transition-transform duration-500 group-hover:translate-y-[-2px] rounded-[2px]`}
+        className={`relative h-[580px] overflow-hidden bg-[#e8e5e0] transition-transform duration-500 group-hover:translate-y-[-2px] rounded-[2px]`}
       >
         <div className="absolute left-3 top-3 z-10 flex flex-wrap gap-2">
           <span className="bg-white px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-black shadow-sm">
@@ -31,11 +33,20 @@ function ProductCard({ product }: { product: MoodProduct }) {
         </div>
 
         {product.image ? (
-          <img
-            src={product.image}
-            alt={product.name}
-            className="block h-[480px] w-full object-cover object-top transition-transform duration-700 group-hover:scale-[1.05]"
-          />
+          <>
+            <img
+              src={product.image}
+              alt={product.name}
+              className={`block h-[480px] w-full object-cover object-top transition-all duration-700 group-hover:scale-[1.05] ${product.hoverImage ? 'group-hover:opacity-0' : 'opacity-100'}`}
+            />
+            {product.hoverImage && (
+              <img
+                src={product.hoverImage}
+                alt={`${product.name} hover`}
+                className="absolute inset-0 block h-[480px] w-full object-cover object-top transition-all duration-700 opacity-0 group-hover:opacity-100 group-hover:scale-[1.05]"
+              />
+            )}
+          </>
         ) : (
           <div className="flex h-full items-center justify-center">
             <span className="text-[60px] font-black text-zinc-300 uppercase">
@@ -181,9 +192,10 @@ export default function MoodProductsSectionClient({ products, bannerImage }: { p
       <div className="mx-auto max-w-full">
         <div className="mb-10 flex items-start justify-between gap-4">
           <div>
-            <h2 className="text-[32px] font-black uppercase tracking-tight text-black md:text-[42px] leading-none">
-              Must-Haves For Every Mood
-            </h2>
+            <TextAnimation 
+              text="Must-Haves For Every Mood"
+              className="text-[32px] font-black uppercase tracking-tight text-black md:text-[42px] leading-none"
+            />
             <p className="mt-3 text-[18px] text-zinc-600">
               New braiding arrivals + fam faves for every style.
             </p>
@@ -207,37 +219,8 @@ export default function MoodProductsSectionClient({ products, bannerImage }: { p
           </div>
         </div>
 
-        <div className="flex flex-col xl:flex-row gap-2 md:gap-4">
-          {/* Left Promo Banner */}
-          <article className="shrink-0 basis-[400px] md:basis-[450px]">
-            <div className="flex h-full min-h-[650px] flex-col bg-[#d994ad] transition-transform duration-500 hover:scale-[1.01]">
-              <div className="relative h-[500px] md:h-[550px] overflow-hidden">
-                <img
-                  src={bannerImage}
-                  alt="Signature Braiding Collection"
-                  className="h-full w-full object-cover transition-transform duration-700 hover:scale-110"
-                />
-              </div>
-
-              <div className="flex flex-1 flex-col px-8 py-10 justify-center">
-                <h3 className="text-[26px] font-black uppercase leading-[1.1] text-black">
-                  PREMIUM BRAIDING HAIR COLLECTION
-                </h3>
-
-                <p className="mt-4 text-[18px] text-black/80">
-                  Crafted for elegance. Back by popular demand.
-                </p>
-
-                <div className="mt-8">
-                  <Link href="/inventory" className="inline-block min-w-[180px] bg-black px-10 py-5 text-[15px] font-bold uppercase tracking-widest text-white transition hover:bg-neutral-800 text-center">
-                    Dream Big
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </article>
-
-          {/* Right Product Cards - Scrollable */}
+        <div className="flex flex-col gap-2 md:gap-4">
+          {/* Product Cards - Scrollable */}
           <div
             ref={scrollRef}
             onMouseDown={onMouseDown}

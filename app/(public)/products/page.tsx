@@ -4,10 +4,15 @@ import prisma from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
-async function getProducts() {
+async function getProducts(category?: string) {
   try {
+    const where: any = { status: "Active" };
+    if (category) {
+      where.category = { slug: category };
+    }
+    
     return await prisma.product.findMany({
-      where: { status: "Active" },
+      where,
       include: { category: true },
       orderBy: { createdAt: "desc" },
     });
@@ -17,8 +22,13 @@ async function getProducts() {
   }
 }
 
-export default async function ProductsPage() {
-  const products = await getProducts();
+export default async function ProductsPage({ 
+  searchParams 
+}: { 
+  searchParams: Promise<{ category?: string }> 
+}) {
+  const { category } = await searchParams;
+  const products = await getProducts(category);
 
   return (
     <section className="min-h-screen bg-white px-4 py-8 md:px-8 xl:px-12">

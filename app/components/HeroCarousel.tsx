@@ -78,6 +78,8 @@ const slides = [
   // },
 ];
 
+import { motion, AnimatePresence } from "framer-motion";
+
 export default function HeroCarousel() {
   const [current, setCurrent] = useState(0);
 
@@ -103,7 +105,7 @@ export default function HeroCarousel() {
         {slides.map((slide, index) => (
           <div
             key={slide.id}
-            className={`absolute inset-0 transition-all duration-700 ease-in-out ${
+            className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
               index === current
                 ? "z-10 opacity-100"
                 : "pointer-events-none z-0 opacity-0"
@@ -113,38 +115,62 @@ export default function HeroCarousel() {
               <div className="grid h-full w-full grid-cols-2 items-center gap-0">
                 {/* Left: Text Content */}
                 <div className="flex flex-col justify-center py-4 text-left lg:pl-32">
-                  <p className="mb-1 text-[8px] font-medium uppercase tracking-[0.3em] text-zinc-500 md:mb-6 md:text-[12px] md:tracking-[0.4em]">
+                  <motion.p 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={index === current ? { opacity: 1, y: 0 } : {}}
+                    transition={{ duration: 0.6, delay: 0.2 }}
+                    className="mb-1 text-[8px] font-medium uppercase tracking-[0.3em] text-zinc-500 md:mb-6 md:text-[12px] md:tracking-[0.4em]"
+                  >
                     {slide.eyebrow}
-                  </p>
+                  </motion.p>
 
-                  <h1 className="whitespace-pre-line text-[20px] font-bold uppercase leading-[1.1] tracking-tight text-black md:text-[48px] lg:text-[72px]">
+                  <motion.h1 
+                    initial={{ opacity: 0, x: -50 }}
+                    animate={index === current ? { opacity: 1, x: 0 } : {}}
+                    transition={{ duration: 0.8, delay: 0.3, ease: [0.21, 0.47, 0.32, 0.98] }}
+                    className="whitespace-pre-line text-[20px] font-bold uppercase leading-[1.1] tracking-tight text-black md:text-[48px] lg:text-[72px]"
+                  >
                     {slide.title}
-                  </h1>
+                  </motion.h1>
 
-                  <p className="mt-1 text-[10px] leading-relaxed text-zinc-600 md:mt-8 md:text-[16px] lg:max-w-[540px] lg:text-[18px]">
+                  <motion.p 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={index === current ? { opacity: 1, y: 0 } : {}}
+                    transition={{ duration: 0.6, delay: 0.5 }}
+                    className="mt-1 text-[10px] leading-relaxed text-zinc-600 md:mt-8 md:text-[16px] lg:max-w-[540px] lg:text-[18px]"
+                  >
                     {slide.description}
-                  </p>
+                  </motion.p>
 
-                  <div>
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={index === current ? { opacity: 1, scale: 1 } : {}}
+                    transition={{ duration: 0.4, delay: 0.7 }}
+                  >
                     <button className="mt-3 inline-flex h-[32px] items-center justify-center bg-black px-4 text-[9px] font-bold uppercase tracking-widest text-white transition hover:bg-zinc-800 md:mt-10 md:h-[56px] md:px-12 md:text-[14px]">
                       {slide.button}
                     </button>
-                  </div>
+                  </motion.div>
                 </div>
 
                 {/* Right: Image */}
                 <div className="flex h-full items-end justify-start">
-                  <div className="relative h-full w-full max-h-[250px] md:max-h-[500px] lg:max-h-[750px] xl:max-h-[800px]">
+                  <motion.div 
+                    initial={{ opacity: 0, scale: 0.8, x: 50 }}
+                    animate={index === current ? { opacity: 1, scale: 1.1, x: 0 } : {}}
+                    transition={{ duration: 1.2, delay: 0.2, ease: "easeOut" }}
+                    className="relative h-full w-full max-h-[250px] md:max-h-[500px] lg:max-h-[750px] xl:max-h-[800px]"
+                  >
                     <Image
                       src={slide.image}
                       alt={slide.title.replace(/\n/g, " ")}
                       fill
                       priority={index === 0}
                       unoptimized
-                      className="object-contain object-bottom scale-100 md:scale-110 origin-bottom"
+                      className="object-contain object-bottom origin-bottom"
                       sizes="(max-width: 768px) 50vw, 50vw"
                     />
-                  </div>
+                  </motion.div>
                 </div>
               </div>
             </div>

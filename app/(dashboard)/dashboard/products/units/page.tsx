@@ -15,9 +15,13 @@ async function getUnits() {
     const usageCounts = await Promise.all(
       units.map(async (unit) => ({
         id: unit.id,
-        count: await prisma.product.count({
-          where: { unit: unit.name },
-        }),
+        count:
+          (await prisma.product.count({
+            where: { unit: unit.name },
+          })) +
+          (await prisma.productUnitOption.count({
+            where: { unit: unit.name },
+          })),
       }))
     );
 

@@ -13,6 +13,8 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import Link from "next/link";
+import { useCart } from "@/app/context/CartContext";
+import { getProductUnitOptions } from "@/lib/product-unit-options";
 
 type ProductDetailViewProps = {
   product: {
@@ -27,6 +29,14 @@ type ProductDetailViewProps = {
     status: string;
     category: { name: string; slug: string };
     colors: Array<{ id: number; name: string; hex: string }>;
+    unitOptions?: Array<{
+      id: number;
+      label: string;
+      unit: string;
+      priceInCents: number;
+      stock: number;
+      sortOrder: number;
+    }>;
     variations: Array<{ id: number; type: string; value: string }>;
   };
 };
@@ -34,20 +44,48 @@ type ProductDetailViewProps = {
 export default function ProductDetailView({
   product,
 }: ProductDetailViewProps) {
+  const { addToCart } = useCart();
   const gallery = useMemo(() => {
     const images = product.image ? [product.image] : [];
     return images.length > 0 ? images : ["/auth-bg.png"];
   }, [product.image]);
+  const unitOptions = useMemo(() => getProductUnitOptions(product), [product]);
 
   const [selectedImage, setSelectedImage] = useState(gallery[0]);
   const [qty, setQty] = useState(1);
   const [selectedColor, setSelectedColor] = useState(
     product.colors[0] || null
   );
+  const [selectedUnitLabel, setSelectedUnitLabel] = useState(unitOptions[0]?.label);
+
+  const selectedUnitOption =
+    unitOptions.find((option) => option.label === selectedUnitLabel) || unitOptions[0];
 
   const decreaseQty = () => setQty((prev) => Math.max(1, prev - 1));
   const increaseQty = () =>
-    setQty((prev) => Math.min(product.stock || prev + 1, prev + 1));
+    setQty((prev) => Math.min(selectedUnitOption?.stock || prev + 1, prev + 1));
+
+  const handleUnitChange = (label: string) => {
+    setSelectedUnitLabel(label);
+    setQty(1);
+  };
+
+  const handleAddToCart = () => {
+    if (!selectedUnitOption || selectedUnitOption.stock === 0) {
+      return;
+    }
+
+    for (let index = 0; index < qty; index += 1) {
+      addToCart({
+        cartKey: `${product.id}:${selectedUnitOption.label}`,
+        id: product.id,
+        name: product.name,
+        unitLabel: selectedUnitOption.label,
+        price: selectedUnitOption.priceInCents,
+        image: product.image,
+      });
+    }
+  };
 
   const variationLabel =
     product.variations.length > 0
@@ -141,7 +179,7 @@ export default function ProductDetailView({
             </div>
 
             <div className="mb-4 text-[24px] font-black text-black">
-              UGX {product.priceInCents.toLocaleString()}
+              UGX {selectedUnitOption.priceInCents.toLocaleString()}
             </div>
 
             <div className="mb-5 flex items-center gap-3">
@@ -183,8 +221,8 @@ export default function ProductDetailView({
                 <span className="text-[14px] font-medium leading-[1.2]">
                   Stock
                   <br />
-                  {product.stock > 0
-                    ? `${product.stock} ${product.unit.toLowerCase()}${product.stock === 1 ? "" : "s"}`
+                  {selectedUnitOption.stock > 0
+                    ? `${selectedUnitOption.stock} available`
                     : "Out of stock"}
                 </span>
               </div>
@@ -275,6 +313,42 @@ export default function ProductDetailView({
               </div>
             )}
 
+            {unitOptions.length > 0 && (
+              <div className="mb-8">
+                <label className="mb-3 block text-[13px] font-bold uppercase tracking-wider text-black">
+                  Choose Unit
+                </label>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {unitOptions.map((option) => {
+                    const isActive = selectedUnitOption.label === option.label;
+
+                    return (
+                      <button
+                        key={option.label}
+                        type="button"
+                        onClick={() => handleUnitChange(option.label)}
+                        className={`rounded-[2px] border px-4 py-4 text-left transition ${
+                          isActive
+                            ? "border-black bg-black text-white"
+                            : "border-black/10 bg-white text-black hover:border-black/30"
+                        }`}
+                      >
+                        <p className="text-[14px] font-bold uppercase tracking-wide">
+                          {option.label}
+                        </p>
+                        <p className={`mt-2 text-[20px] font-black ${isActive ? "text-white" : "text-black"}`}>
+                          UGX {option.priceInCents.toLocaleString()}
+                        </p>
+                        <p className={`mt-1 text-[12px] uppercase tracking-wide ${isActive ? "text-white/80" : "text-zinc-500"}`}>
+                          {option.stock > 0 ? `${option.stock} in stock` : "Out of stock"}
+                        </p>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             <button className="mb-8 flex w-full items-center justify-center gap-3 rounded-[2px] border border-black/15 bg-white px-4 py-4 text-[15px] font-bold uppercase tracking-widest text-black transition hover:border-black/30 hover:bg-zinc-50">
               <Camera className="h-5 w-5" />
               Try This Style On
@@ -302,10 +376,12 @@ export default function ProductDetailView({
               </div>
 
               <button
-                disabled={product.stock === 0}
+                type="button"
+                onClick={handleAddToCart}
+                disabled={selectedUnitOption.stock === 0}
                 className="flex-1 bg-black px-8 py-5 text-[15px] font-bold uppercase tracking-[0.15em] text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:bg-zinc-300"
               >
-                {product.stock === 0 ? "Out of Stock" : "Add to Cart"}
+                {selectedUnitOption.stock === 0 ? "Out of Stock" : `Add ${selectedUnitOption.label} to Cart`}
               </button>
             </div>
 

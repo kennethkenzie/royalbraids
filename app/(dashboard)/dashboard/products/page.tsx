@@ -7,10 +7,11 @@ import {
   Trash2,
   EyeOff,
   Eye,
+  Star,
 } from "lucide-react";
 import prisma from "@/lib/prisma";
 import Link from "next/link";
-import { unpublishProduct, publishProduct } from "@/lib/actions";
+import { unpublishProduct, publishProduct, toggleProductFeatured } from "@/lib/actions";
 import DeleteProductForm from "@/app/components/DeleteProductForm";
 
 export const dynamic = "force-dynamic";
@@ -121,7 +122,15 @@ export default async function ProductsPage() {
                           </div>
                         )}
                         <div>
-                          <p className="text-[14px] font-medium text-black">{product.name}</p>
+                          <div className="flex items-center gap-2">
+                            <p className="text-[14px] font-medium text-black">{product.name}</p>
+                            {(product as any).isFeatured ? (
+                              <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-700">
+                                <Star className="h-3 w-3 fill-amber-500 text-amber-500" />
+                                Featured
+                              </span>
+                            ) : null}
+                          </div>
                           <p className="text-[12px] text-zinc-400">{product.slug}</p>
                         </div>
                       </div>
@@ -136,7 +145,7 @@ export default async function ProductsPage() {
                     </td>
                     <td className="px-6 py-4">
                       <span className={`text-[13px] ${product.stock === 0 ? "text-red-500 font-medium" : "text-zinc-500"}`}>
-                        {product.stock === 0 ? "Out of Stock" : `${product.stock} ${product.unit.toLowerCase()}${product.stock === 1 ? "" : "s"}`}
+                        {product.stock === 0 ? "Out of Stock" : `${product.stock} available • Default: ${product.unit}`}
                       </span>
                     </td>
                     <td className="px-6 py-4">
@@ -178,6 +187,19 @@ export default async function ProductsPage() {
                             </button>
                           </form>
                         )}
+                        <form action={toggleProductFeatured.bind(null, product.id)}>
+                          <button
+                            type="submit"
+                            className={`p-2 transition-colors ${
+                              (product as any).isFeatured
+                                ? "text-amber-500 hover:text-amber-600"
+                                : "text-zinc-400 hover:text-amber-500"
+                            }`}
+                            title={(product as any).isFeatured ? "Remove from featured products" : "Feature product"}
+                          >
+                            <Star className={`h-4 w-4 ${(product as any).isFeatured ? "fill-amber-500" : ""}`} />
+                          </button>
+                        </form>
                         <DeleteProductForm id={product.id} name={product.name} />
                       </div>
                     </td>

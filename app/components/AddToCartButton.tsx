@@ -10,6 +10,8 @@ type AddToCartButtonProps = {
     name: string;
     price: number;
     image: string | null;
+    unitLabel?: string;
+    cartKey?: string;
   };
   className?: string;
   showText?: boolean;
@@ -23,8 +25,10 @@ export default function AddToCartButton({ product, className = "", showText = fa
     e.preventDefault();
     e.stopPropagation();
     addToCart({
+      cartKey: product.cartKey || `${product.id}:${product.unitLabel || "default"}`,
       id: product.id,
       name: product.name,
+      unitLabel: product.unitLabel,
       price: product.price,
       image: product.image,
     });

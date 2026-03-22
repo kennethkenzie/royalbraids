@@ -6,6 +6,17 @@ import { unstable_noStore as noStore } from "next/cache";
 async function getMoodProducts() {
   noStore();
   try {
+    const featuredProducts = await prisma.product.findMany({
+      where: { status: "Active", isFeatured: true } as any,
+      include: { category: true },
+      orderBy: { updatedAt: "desc" },
+      take: 10,
+    });
+
+    if (featuredProducts.length > 0) {
+      return featuredProducts;
+    }
+
     return await prisma.product.findMany({
       where: { status: "Active" },
       include: { category: true },

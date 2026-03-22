@@ -202,7 +202,7 @@ export default function CheckoutPage() {
           
           <div className="scrollbar-hide max-h-[400px] space-y-6 overflow-y-auto pr-2">
             {cart.map((item) => (
-              <div key={item.id} className="flex gap-4">
+              <div key={item.cartKey} className="flex gap-4">
                 <div className="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-zinc-50">
                   {item.image ? (
                     <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
@@ -214,6 +214,9 @@ export default function CheckoutPage() {
                 </div>
                 <div className="flex flex-1 flex-col justify-center">
                   <h4 className="text-[14px] font-bold text-black line-clamp-1 uppercase">{item.name}</h4>
+                  {item.unitLabel ? (
+                    <p className="mt-1 text-[12px] uppercase tracking-wide text-zinc-500">{item.unitLabel}</p>
+                  ) : null}
                   <p className="mt-1 text-[13px] text-zinc-500">Qty: {item.quantity}</p>
                   <p className="mt-1 text-[14px] font-bold text-black">UGX {(item.price * item.quantity).toLocaleString()}</p>
                 </div>

@@ -4,6 +4,68 @@ import prisma from "./prisma";
 import { revalidatePath } from "next/cache";
 import crypto from 'node:crypto';
 
+function normalizeProductUnitOptions(
+  rawUnitOptions: Array<{
+    label?: string;
+    unit?: string;
+    price?: number | string;
+    priceInCents?: number | string;
+    stock?: number | string;
+  }> | undefined,
+  fallback?: {
+    price?: number | string;
+    stock?: number | string;
+    unit?: string;
+  }
+) {
+  const normalized = (rawUnitOptions ?? [])
+    .map((option, index) => {
+      const label = String(option.label ?? option.unit ?? "").trim();
+      const unit = String(option.unit ?? option.label ?? "").trim() || label;
+      const rawPrice = option.priceInCents ?? option.price ?? 0;
+      const rawStock = option.stock ?? 0;
+      const priceInCents = Number(rawPrice);
+      const stock = Number(rawStock);
+
+      if (!label || !unit || Number.isNaN(priceInCents) || Number.isNaN(stock)) {
+        return null;
+      }
+
+      return {
+        label,
+        unit,
+        priceInCents: Math.max(0, Math.round(priceInCents)),
+        stock: Math.max(0, Math.round(stock)),
+        sortOrder: index,
+      };
+    })
+    .filter(Boolean) as Array<{
+      label: string;
+      unit: string;
+      priceInCents: number;
+      stock: number;
+      sortOrder: number;
+    }>;
+
+  if (normalized.length > 0) {
+    return normalized;
+  }
+
+  const fallbackUnit = String(fallback?.unit ?? "Piece").trim() || "Piece";
+  const fallbackPrice = Number(fallback?.price ?? 0);
+  const fallbackStock = Number(fallback?.stock ?? 0);
+
+  return [
+    {
+      label: fallbackUnit,
+      unit: fallbackUnit,
+      priceInCents: Number.isNaN(fallbackPrice) ? 0 : Math.max(0, Math.round(fallbackPrice)),
+      stock: Number.isNaN(fallbackStock) ? 0 : Math.max(0, Math.round(fallbackStock)),
+      sortOrder: 0,
+    },
+  ];
+}
+
 async function resolveParentCategoryId(rawParentId: FormDataEntryValue | null) {
   if (!rawParentId) {
     return null;
@@ -57,9 +119,30 @@ async function ensureValidCategoryParent(categoryId: number, parentId: number | 
   }
 }
 
+export async function getFeaturedProducts(limit = 8) {
+  try {
+    return await prisma.product.findMany({
+      where: {
+        isFeatured: true,
+        status: { not: "Archived" },
+      } as any,
+      include: {
+        category: {
+          select: { name: true },
+        },
+      },
+      take: limit,
+      orderBy: { createdAt: "desc" },
+    });
+  } catch (error) {
+    console.error("Failed to fetch featured products:", error);
+    return [];
+  }
+}
+
 export async function createProduct(formData: any) {
   try {
-    const { name, description, price, stock, category, unit, colors, variations, status, image } = formData;
+    const { name, description, price, stock, category, unit, unitOptions, colors, variations, status, isFeatured, image, hoverImage } = formData;
 
     // Basic slug generation
     const slug = name
@@ -104,20 +187,32 @@ export async function createProduct(formData: any) {
       return { success: false, error: `A product with the name "${name}" already exists. Please choose a different name.` };
     }
 
+    const normalizedUnitOptions = normalizeProductUnitOptions(unitOptions, {
+      price,
+      stock,
+      unit,
+    });
+    const primaryUnitOption = normalizedUnitOptions[0];
+
     // Create the product
     const product = await prisma.product.create({
       data: {
         name,
         slug,
         description,
-        priceInCents: parseInt(price), 
-        stock: parseInt(stock),
-        unit: unit || "Piece",
+        priceInCents: primaryUnitOption.priceInCents,
+        stock: primaryUnitOption.stock,
+        unit: primaryUnitOption.label,
         status: status || "Active",
+        isFeatured: Boolean(isFeatured),
         image,
+        hoverImage,
         categoryId: categoryRecord.id,
         colors: {
           connect: colorConnections.map((c) => ({ id: c.id })),
+        },
+        unitOptions: {
+          create: normalizedUnitOptions,
         },
         variations: {
           create: variations.map((v: { name: string; value: string }) => ({
@@ -154,10 +249,13 @@ export async function updateProduct(formData: any) {
       stock,
       category,
       unit,
+      unitOptions,
       colors,
       variations,
       status,
+      isFeatured,
       image,
+      hoverImage,
     } = formData;
 
     if (!id) {
@@ -206,20 +304,32 @@ export async function updateProduct(formData: any) {
       };
     }
 
+    const normalizedUnitOptions = normalizeProductUnitOptions(unitOptions, {
+      price,
+      stock,
+      unit,
+    });
+    const primaryUnitOption = normalizedUnitOptions[0];
+
     const product = await prisma.product.update({
       where: { id },
       data: {
         name,
         slug,
         description,
-        priceInCents: parseInt(price),
-        stock: parseInt(stock),
-        unit: unit || "Piece",
-        status: status || "Active",
+        priceInCents: primaryUnitOption.priceInCents,
+        stock: primaryUnitOption.stock,
+        unit: primaryUnitOption.label,
+        isFeatured: Boolean(isFeatured),
         image,
+        hoverImage,
         categoryId: categoryRecord.id,
         colors: {
           set: colorConnections.map((c) => ({ id: c.id })),
+        },
+        unitOptions: {
+          deleteMany: {},
+          create: normalizedUnitOptions,
         },
         variations: {
           deleteMany: {},
@@ -304,6 +414,30 @@ export async function publishProduct(id: number) {
   }
 }
 
+export async function toggleProductFeatured(id: number) {
+  try {
+    const product = await prisma.product.findUnique({
+      where: { id },
+      select: { id: true, isFeatured: true },
+    });
+
+    if (!product) {
+      throw new Error("Product not found.");
+    }
+
+    await prisma.product.update({
+      where: { id },
+      data: { isFeatured: !product.isFeatured },
+    });
+
+    revalidatePath("/dashboard/products");
+    revalidatePath("/");
+    revalidatePath("/products");
+  } catch (error: any) {
+    throw new Error(error?.message || "Failed to update featured product status.");
+  }
+}
+
 // ──── Category Actions ────
 
 export async function createCategory(
@@ -366,6 +500,8 @@ export async function createCategory(
 
 export async function updateCategory(id: number, formData: FormData) {
   try {
+    const name = formData.get("name") as string | null;
+    const description = formData.get("description") as string | null;
     const banner = formData.get("banner") as string | null;
     const featuredBanner = formData.get("featuredBanner") as string | null;
     const circleImage = formData.get("circleImage") as string | null;
@@ -374,20 +510,86 @@ export async function updateCategory(id: number, formData: FormData) {
 
     await ensureValidCategoryParent(id, parentId);
 
-    await prisma.category.update({
+    const existingCategory = await prisma.category.findUnique({
       where: { id },
-      data: {
-        banner: banner?.trim() || null,
-        featuredBanner: featuredBanner?.trim() || null,
-        circleImage: circleImage?.trim() || null,
-        isFeatured,
-        parentId,
-      },
+      select: { id: true, slug: true },
     });
+
+    if (!existingCategory) {
+      throw new Error("Category not found.");
+    }
+
+    const updateData: any = {
+      description: description?.trim() || null,
+      banner: banner?.trim() || null,
+      featuredBanner: featuredBanner?.trim() || null,
+      circleImage: circleImage?.trim() || null,
+      isFeatured,
+      parentId,
+    };
+
+    if (name?.trim()) {
+      const finalName = name.trim();
+      const nextSlug = finalName
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+
+      if (nextSlug !== existingCategory.slug) {
+        const duplicateCategory = await prisma.category.findUnique({
+          where: { slug: nextSlug },
+          select: { id: true },
+        });
+
+        if (duplicateCategory && duplicateCategory.id !== id) {
+          throw new Error("A category with this name already exists.");
+        }
+      }
+
+      const finalSlug = nextSlug;
+
+      await prisma.$executeRaw`
+        UPDATE "Category" 
+        SET 
+          "name" = ${finalName}, 
+          "slug" = ${finalSlug}, 
+          "description" = ${updateData.description}, 
+          "banner" = ${updateData.banner}, 
+          "featuredBanner" = ${updateData.featuredBanner}, 
+          "circleImage" = ${updateData.circleImage}, 
+          "isFeatured" = ${updateData.isFeatured}, 
+          "parentId" = ${updateData.parentId}, 
+          "updatedAt" = NOW() 
+        WHERE "id" = ${id}
+      `;
+    } else {
+      await prisma.$executeRaw`
+        UPDATE "Category" 
+        SET 
+          "description" = ${updateData.description}, 
+          "banner" = ${updateData.banner}, 
+          "featuredBanner" = ${updateData.featuredBanner}, 
+          "circleImage" = ${updateData.circleImage}, 
+          "isFeatured" = ${updateData.isFeatured}, 
+          "parentId" = ${updateData.parentId}, 
+          "updatedAt" = NOW() 
+        WHERE "id" = ${id}
+      `;
+    }
 
     revalidatePath("/dashboard/products/category");
     revalidatePath("/");
   } catch (error: any) {
+    if (error?.code === "P2002") {
+      throw new Error("A category with this name already exists.");
+    }
+
+    if (error?.code === "P2025") {
+      throw new Error("Category not found.");
+    }
+
+    console.error("updateCategory error:", error);
     throw new Error(error?.message || "Failed to update category.");
   }
 }
@@ -502,6 +704,10 @@ export async function updateUnit(
         where: { unit: currentUnit.name },
         data: { unit: name },
       }),
+      prisma.productUnitOption.updateMany({
+        where: { unit: currentUnit.name },
+        data: { unit: name },
+      }),
     ]);
 
     revalidatePath("/dashboard/products/units");
@@ -528,11 +734,16 @@ export async function deleteUnit(id: number) {
       throw new Error("Unit not found.");
     }
 
-    const productCount = await prisma.product.count({
-      where: { unit: unit.name },
-    });
+    const [productCount, unitOptionCount] = await Promise.all([
+      prisma.product.count({
+        where: { unit: unit.name },
+      }),
+      prisma.productUnitOption.count({
+        where: { unit: unit.name },
+      }),
+    ]);
 
-    if (productCount > 0) {
+    if (productCount > 0 || unitOptionCount > 0) {
       throw new Error("Cannot delete a unit that is assigned to products.");
     }
 
@@ -554,21 +765,23 @@ export async function createReel(formData: FormData) {
   try {
     const video = formData.get("video") as string;
     const poster = formData.get("poster") as string;
-    const productImage = formData.get("productImage") as string;
+    const productImage = formData.get("productImage") as string | null;
     const title = formData.get("title") as string;
     const price = formData.get("price") as string;
     const link = formData.get("link") as string;
 
-    if (!video || !productImage || !title || !price) {
+    if (!video || !title || !price) {
       throw new Error("Missing required fields for Reel.");
     }
+
+    const finalProductImage = productImage?.trim() || "https://res.cloudinary.com/dnvm4kuel/image/upload/v1741718000/placeholder_image.png";
 
     await prisma.$executeRawUnsafe(
       `INSERT INTO "Reel" (video, poster, "productImage", title, price, link, "updatedAt") 
        VALUES ($1, $2, $3, $4, $5, $6, NOW())`,
       video,
       poster || null,
-      productImage,
+      finalProductImage,
       title,
       price,
       link || "/products"

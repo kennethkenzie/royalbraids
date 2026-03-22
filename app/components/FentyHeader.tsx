@@ -27,10 +27,10 @@ export default function FentyHeader({
   ];
 
   const activeNavLinks = navLinks.length > 0 ? navLinks : [
-    { name: "Closure", href: "/inventory?category=closure" },
-    { name: "Crochet Braid", href: "/inventory?category=crochet-braid" },
-    { name: "Weaves", href: "/inventory?category=weaves" },
-    { name: "Braids", href: "/inventory?category=braids" },
+    { name: "Closure", href: "/products?category=closure" },
+    { name: "Crochet Braid", href: "/products?category=crochet-braid" },
+    { name: "Weaves", href: "/products?category=weaves" },
+    { name: "Braids", href: "/products?category=braids" },
     { name: "Blog", href: "/blog" },
     { name: "Contact Us", href: "/contact" },
     { name: "Help", href: "/help" },

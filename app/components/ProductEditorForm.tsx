@@ -77,10 +77,13 @@ type ProductFormData = {
   stock: string;
   category: string;
   unit: string;
+  unitOptions: Array<{ id: number; label: string; unit: string; price: string; stock: string }>;
+  isFeatured?: boolean;
   status?: string;
   variations: Array<{ id: number; name: string; value: string }>;
   selectedColors: ProductColor[];
   imageUrl: string;
+  hoverImageUrl?: string;
 };
 
 type ProductEditorFormProps = {
@@ -98,10 +101,13 @@ const defaultProduct: ProductFormData = {
   stock: "",
   category: "Braids",
   unit: "Piece",
+  unitOptions: [{ id: 1, label: "1 pc", unit: "Piece", price: "", stock: "" }],
+  isFeatured: false,
   status: "Active",
   variations: [{ id: 1, name: "Length", value: "24 inch" }],
   selectedColors: [fallbackColors[0]],
   imageUrl: "",
+  hoverImageUrl: "",
 };
 
 export default function ProductEditorForm({
@@ -125,6 +131,12 @@ export default function ProductEditorForm({
   const [stock, setStock] = useState(product.stock);
   const [category, setCategory] = useState(product.category);
   const [unit, setUnit] = useState(product.unit);
+  const [unitOptions, setUnitOptions] = useState(
+    product.unitOptions.length > 0
+      ? product.unitOptions
+      : [{ id: 1, label: "1 pc", unit: "Piece", price: "", stock: "" }]
+  );
+  const [isFeatured, setIsFeatured] = useState(Boolean(product.isFeatured));
   const [status, setStatus] = useState(product.status || "Active");
   const [variations, setVariations] = useState(product.variations);
   const [selectedColors, setSelectedColors] = useState<ProductColor[]>(
@@ -136,11 +148,15 @@ export default function ProductEditorForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [imageUrl, setImageUrl] = useState(product.imageUrl);
+  const [hoverImageUrl, setHoverImageUrl] = useState(product.hoverImageUrl || "");
   const [imageName, setImageName] = useState("");
+  const [hoverImageName, setHoverImageName] = useState("");
   const [message, setMessage] = useState<{
     type: "success" | "error";
     text: string;
   } | null>(null);
+  const hoverFileInputRef = useRef<HTMLInputElement | null>(null);
+  const [isUploadingHoverImage, setIsUploadingHoverImage] = useState(false);
 
   const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
   const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
@@ -156,6 +172,27 @@ export default function ProductEditorForm({
 
   const addVariation = () => {
     setVariations([...variations, { id: Date.now(), name: "", value: "" }]);
+  };
+
+  const addUnitOption = () => {
+    const fallbackUnit = units[0]?.name || "Piece";
+
+    setUnitOptions((prev) => [
+      ...prev,
+      {
+        id: Date.now(),
+        label: "",
+        unit: fallbackUnit,
+        price: "",
+        stock: "",
+      },
+    ]);
+  };
+
+  const removeUnitOption = (id: number) => {
+    setUnitOptions((prev) =>
+      prev.length === 1 ? prev : prev.filter((option) => option.id !== id)
+    );
   };
 
   const removeVariation = (id: number) => {
@@ -206,7 +243,8 @@ export default function ProductEditorForm({
   };
 
   const handleImageSelect = async (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
+    type: "main" | "hover" = "main"
   ) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -225,13 +263,8 @@ export default function ProductEditorForm({
       return;
     }
 
-    if (file.size > 5 * 1024 * 1024) {
-      setMessage({ type: "error", text: "Image must be 5MB or smaller." });
-      event.target.value = "";
-      return;
-    }
-
-    setIsUploadingImage(true);
+    const isMain = type === "main";
+    isMain ? setIsUploadingImage(true) : setIsUploadingHoverImage(true);
     setMessage(null);
 
     try {
@@ -246,29 +279,39 @@ export default function ProductEditorForm({
 
       const data = await response.json();
       if (!response.ok || !data.secure_url) {
-        throw new Error(data?.error?.message || "Image upload failed.");
+        throw new Error(data?.error?.message || `${type} image upload failed.`);
       }
 
-      setImageUrl(data.secure_url);
-      setImageName(file.name);
-      setMessage({ type: "success", text: "Image uploaded successfully." });
+      if (isMain) {
+        setImageUrl(data.secure_url);
+        setImageName(file.name);
+      } else {
+        setHoverImageUrl(data.secure_url);
+        setHoverImageName(file.name);
+      }
+      setMessage({ type: "success", text: `${isMain ? "Main" : "Hover"} image uploaded successfully.` });
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Image upload failed.";
-      setImageUrl("");
-      setImageName("");
+      if (isMain) {
+        setImageUrl("");
+        setImageName("");
+      } else {
+        setHoverImageUrl("");
+        setHoverImageName("");
+      }
       setMessage({ type: "error", text: errorMessage });
     } finally {
-      setIsUploadingImage(false);
+      isMain ? setIsUploadingImage(false) : setIsUploadingHoverImage(false);
       event.target.value = "";
     }
   };
 
   const handleSubmit = async () => {
-    if (!name || !price || !stock) {
+    if (!name) {
       setMessage({
         type: "error",
-        text: "Please fill in all required fields (Name, Price, Stock).",
+        text: "Please fill in the product name before saving.",
       });
       return;
     }
@@ -289,17 +332,54 @@ export default function ProductEditorForm({
       return;
     }
 
+    const normalizedUnitOptions = unitOptions
+      .map((option) => ({
+        label: option.label.trim(),
+        unit: option.unit.trim(),
+        price: Math.round(parseFloat(option.price || "0") * 100),
+        stock: parseInt(option.stock || "0", 10),
+      }))
+      .filter((option) => option.label && option.unit);
+
+    if (normalizedUnitOptions.length === 0) {
+      setMessage({
+        type: "error",
+        text: "Add at least one unit option with a label, unit, price, and stock.",
+      });
+      return;
+    }
+
+    const hasInvalidUnitOption = normalizedUnitOptions.some(
+      (option) =>
+        Number.isNaN(option.price) ||
+        option.price < 0 ||
+        Number.isNaN(option.stock) ||
+        option.stock < 0
+    );
+
+    if (hasInvalidUnitOption) {
+      setMessage({
+        type: "error",
+        text: "Each unit option needs a valid price and stock value.",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     setMessage(null);
+
+    const primaryUnitOption = normalizedUnitOptions[0];
 
     const payload = {
       id: product.id,
       name,
       description,
-      price: Math.round(parseFloat(price || "0") * 100),
-      stock,
+      price: primaryUnitOption.price,
+      stock: primaryUnitOption.stock,
       category,
-      unit,
+      unit: primaryUnitOption.label,
+      unitOptions: normalizedUnitOptions,
+      isFeatured,
       colors: selectedColors.map((color) => ({
         name: color.name.trim() || buildColorName(color.hex),
         hex: normalizeHex(color.hex),
@@ -311,6 +391,7 @@ export default function ProductEditorForm({
       })),
       status,
       image: imageUrl,
+      hoverImage: hoverImageUrl,
     };
 
     const result =
@@ -515,57 +596,123 @@ export default function ProductEditorForm({
             <h3 className="mb-6 text-[16px] font-bold text-black">
               Pricing & Stock
             </h3>
-            <div className="grid gap-4 sm:grid-cols-3">
+            <div className="mb-4 flex items-center justify-between gap-3">
               <div>
-                <label className="mb-2 block text-[13px] font-medium text-zinc-700">
-                  Base Price (UGX)
-                </label>
-                <input
-                  type="number"
-                  value={price}
-                  onChange={(e) => setPrice(e.target.value)}
-                  placeholder="0.00"
-                  className="h-11 w-full rounded-xl border border-transparent bg-zinc-50 px-4 text-[14px] outline-none transition-all focus:border-black/10 focus:bg-white"
-                />
+                <p className="text-[13px] font-medium text-zinc-700">
+                  Unit options
+                </p>
+                <p className="mt-1 text-[12px] text-zinc-500">
+                  Add one row for each purchasable option, for example `1 pc` and `Pack`.
+                </p>
               </div>
-              <div>
-                <label className="mb-2 block text-[13px] font-medium text-zinc-700">
-                  Total Stock
-                </label>
-                <input
-                  type="number"
-                  value={stock}
-                  onChange={(e) => setStock(e.target.value)}
-                  placeholder="0"
-                  className="h-11 w-full rounded-xl border border-transparent bg-zinc-50 px-4 text-[14px] outline-none transition-all focus:border-black/10 focus:bg-white"
-                />
-              </div>
-              <div>
-                <div className="mb-2 flex items-center justify-between gap-3">
-                  <label className="block text-[13px] font-medium text-zinc-700">
-                    Unit
-                  </label>
-                  <Link
-                    href="/dashboard/products/units"
-                    className="text-[12px] font-medium text-black underline underline-offset-4 hover:opacity-70"
-                  >
-                    Add Unit
-                  </Link>
-                </div>
-                <select
-                  value={unit}
-                  onChange={(e) => setUnit(e.target.value)}
-                  className="h-11 w-full appearance-none rounded-xl border border-transparent bg-zinc-50 px-4 text-[14px] outline-none transition-all focus:border-black/10 focus:bg-white"
+              <button
+                type="button"
+                onClick={addUnitOption}
+                className="inline-flex items-center gap-1.5 text-[13px] font-bold text-black transition-opacity hover:opacity-70"
+              >
+                <Plus className="h-4 w-4" />
+                Add Unit Price
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {unitOptions.map((option, index) => (
+                <div
+                  key={option.id}
+                  className="grid gap-4 rounded-xl border border-zinc-100 bg-zinc-50/70 p-4 md:grid-cols-[1.2fr_1fr_1fr_1fr_auto]"
                 >
-                  {(units.length > 0
-                    ? units
-                    : [{ id: 0, name: "Piece" }]).map((unitOption) => (
-                    <option key={unitOption.id} value={unitOption.name}>
-                      {unitOption.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+                  <div>
+                    <label className="mb-2 block text-[12px] font-medium text-zinc-700">
+                      Option Label
+                    </label>
+                    <input
+                      type="text"
+                      value={option.label}
+                      onChange={(e) => {
+                        const next = [...unitOptions];
+                        next[index] = { ...next[index], label: e.target.value };
+                        setUnitOptions(next);
+                      }}
+                      placeholder="e.g. 1 pc or Pack"
+                      className="h-11 w-full rounded-xl border border-transparent bg-white px-4 text-[14px] outline-none transition-all focus:border-black/10"
+                    />
+                  </div>
+                  <div>
+                    <div className="mb-2 flex items-center justify-between gap-3">
+                      <label className="block text-[12px] font-medium text-zinc-700">
+                        Unit
+                      </label>
+                      <Link
+                        href="/dashboard/products/units"
+                        className="text-[11px] font-medium text-black underline underline-offset-4 hover:opacity-70"
+                      >
+                        Manage
+                      </Link>
+                    </div>
+                    <select
+                      value={option.unit}
+                      onChange={(e) => {
+                        const next = [...unitOptions];
+                        next[index] = { ...next[index], unit: e.target.value };
+                        setUnitOptions(next);
+                      }}
+                      className="h-11 w-full appearance-none rounded-xl border border-transparent bg-white px-4 text-[14px] outline-none transition-all focus:border-black/10"
+                    >
+                      {(units.length > 0
+                        ? units
+                        : [{ id: 0, name: "Piece" }]).map((unitOption) => (
+                        <option key={unitOption.id} value={unitOption.name}>
+                          {unitOption.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="mb-2 block text-[12px] font-medium text-zinc-700">
+                      Price (UGX)
+                    </label>
+                    <input
+                      type="number"
+                      value={option.price}
+                      onChange={(e) => {
+                        const next = [...unitOptions];
+                        next[index] = { ...next[index], price: e.target.value };
+                        setUnitOptions(next);
+                        if (index === 0) setPrice(e.target.value);
+                      }}
+                      placeholder="0.00"
+                      className="h-11 w-full rounded-xl border border-transparent bg-white px-4 text-[14px] outline-none transition-all focus:border-black/10"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-2 block text-[12px] font-medium text-zinc-700">
+                      Stock
+                    </label>
+                    <input
+                      type="number"
+                      value={option.stock}
+                      onChange={(e) => {
+                        const next = [...unitOptions];
+                        next[index] = { ...next[index], stock: e.target.value };
+                        setUnitOptions(next);
+                        if (index === 0) setStock(e.target.value);
+                      }}
+                      placeholder="0"
+                      className="h-11 w-full rounded-xl border border-transparent bg-white px-4 text-[14px] outline-none transition-all focus:border-black/10"
+                    />
+                  </div>
+                  <div className="flex items-end">
+                    <button
+                      type="button"
+                      onClick={() => removeUnitOption(option.id)}
+                      disabled={unitOptions.length === 1}
+                      className="flex h-11 w-11 items-center justify-center rounded-xl text-zinc-400 transition-colors hover:bg-red-50 hover:text-red-500 disabled:cursor-not-allowed disabled:text-zinc-200"
+                    >
+                      <X className="h-5 w-5" />
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -744,56 +891,86 @@ export default function ProductEditorForm({
 
           <div className="rounded-2xl border border-zinc-100 bg-white p-6 shadow-sm">
             <h3 className="mb-6 text-[16px] font-bold text-black">
-              Product Image
+              Product Images
             </h3>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/png,image/jpeg,image/webp"
-              className="hidden"
-              onChange={handleImageSelect}
-            />
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isUploadingImage}
-              className="group flex w-full cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-zinc-200 bg-zinc-50/50 p-8 transition-all hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-70"
-            >
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-sm transition-transform group-hover:scale-110">
-                <Upload className="h-5 w-5 text-zinc-400" />
-              </div>
-              <p className="mt-4 text-[13px] font-medium text-black">
-                {isUploadingImage ? "Uploading image..." : "Click to upload"}
-              </p>
-              <p className="mt-1 text-center text-[12px] text-zinc-500">
-                PNG, JPG or WEBP (Max. 5MB)
-              </p>
-            </button>
-
-            {imageUrl && (
-              <div className="mt-4 overflow-hidden rounded-2xl border border-zinc-100 bg-zinc-50">
-                <img
-                  src={imageUrl}
-                  alt={imageName || name || "Uploaded product preview"}
-                  className="h-56 w-full object-cover"
+            
+            <div className="grid gap-6 md:grid-cols-2">
+              {/* Main Image */}
+              <div className="space-y-4">
+                <label className="block text-[12px] font-bold uppercase tracking-widest text-zinc-400 pl-1">Main Image (View 1)</label>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  className="hidden"
+                  onChange={(e) => handleImageSelect(e, "main")}
                 />
-                <div className="flex items-center justify-between gap-3 px-4 py-3">
-                  <p className="min-w-0 flex-1 truncate text-[12px] text-zinc-600">
-                    {imageName || "Current product image"}
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isUploadingImage}
+                  className="group flex w-full cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-zinc-200 bg-zinc-50/50 p-6 transition-all hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-sm transition-transform group-hover:scale-110">
+                    <Upload className="h-4 w-4 text-zinc-400" />
+                  </div>
+                  <p className="mt-4 text-[13px] font-medium text-black">
+                    {isUploadingImage ? "Uploading..." : "Click to upload"}
                   </p>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setImageUrl("");
-                      setImageName("");
-                    }}
-                    className="text-[12px] font-medium text-black hover:opacity-70"
-                  >
-                    Remove
-                  </button>
-                </div>
+                </button>
+
+                {imageUrl && (
+                  <div className="relative overflow-hidden rounded-2xl border border-zinc-100 bg-zinc-50">
+                    <img src={imageUrl} alt="Main" className="h-48 w-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => { setImageUrl(""); setImageName(""); }}
+                      className="absolute top-2 right-2 h-8 w-8 rounded-full bg-white/90 shadow-sm flex items-center justify-center hover:bg-white"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                )}
               </div>
-            )}
+
+              {/* Hover Image */}
+              <div className="space-y-4">
+                <label className="block text-[12px] font-bold uppercase tracking-widest text-zinc-400 pl-1">Hover Image (View 2)</label>
+                <input
+                  ref={hoverFileInputRef}
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  className="hidden"
+                  onChange={(e) => handleImageSelect(e, "hover")}
+                />
+                <button
+                  type="button"
+                  onClick={() => hoverFileInputRef.current?.click()}
+                  disabled={isUploadingHoverImage}
+                  className="group flex w-full cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-zinc-200 bg-zinc-50/50 p-6 transition-all hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-sm transition-transform group-hover:scale-110">
+                    <Upload className="h-4 w-4 text-zinc-400" />
+                  </div>
+                  <p className="mt-4 text-[13px] font-medium text-black">
+                    {isUploadingHoverImage ? "Uploading..." : "Click to upload"}
+                  </p>
+                </button>
+
+                {hoverImageUrl && (
+                  <div className="relative overflow-hidden rounded-2xl border border-zinc-100 bg-zinc-50">
+                    <img src={hoverImageUrl} alt="Hover" className="h-48 w-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => { setHoverImageUrl(""); setHoverImageName(""); }}
+                      className="absolute top-2 right-2 h-8 w-8 rounded-full bg-white/90 shadow-sm flex items-center justify-center hover:bg-white"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
 
           <div className="rounded-2xl border border-zinc-100 bg-white p-6 shadow-sm">
@@ -818,6 +995,27 @@ export default function ProductEditorForm({
                     ? "This product will be visible to customers." 
                     : "This product will be hidden from the store."}
                 </p>
+              </div>
+
+              <div className="flex items-start gap-3 rounded-xl border border-amber-100 bg-amber-50 px-4 py-4">
+                <input
+                  type="checkbox"
+                  id="isFeaturedProduct"
+                  checked={isFeatured}
+                  onChange={(e) => setIsFeatured(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 rounded border-amber-300 accent-amber-500"
+                />
+                <div>
+                  <label
+                    htmlFor="isFeaturedProduct"
+                    className="block cursor-pointer text-[14px] font-semibold text-amber-800"
+                  >
+                    Feature this product
+                  </label>
+                  <p className="mt-0.5 text-[12px] text-amber-700">
+                    Featured products are prioritized in the home page curated products section.
+                  </p>
+                </div>
               </div>
             </div>
           </div>

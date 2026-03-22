@@ -66,7 +66,7 @@ export default function CartDrawer() {
           ) : (
             <div className="space-y-6">
               {cart.map((item) => (
-                <div key={item.id} className="flex gap-4 border-b border-zinc-50 pb-6 last:border-0">
+                <div key={item.cartKey} className="flex gap-4 border-b border-zinc-50 pb-6 last:border-0">
                   <div className="h-24 w-24 shrink-0 overflow-hidden rounded-[4px] bg-zinc-50">
                     {item.image ? (
                       <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
@@ -82,12 +82,17 @@ export default function CartDrawer() {
                         {item.name}
                       </h4>
                       <button 
-                        onClick={() => removeFromCart(item.id)}
+                        onClick={() => removeFromCart(item.cartKey)}
                         className="text-zinc-300 transition-colors hover:text-red-500"
                       >
                         <Trash2 size={16} />
                       </button>
                     </div>
+                    {item.unitLabel ? (
+                      <p className="mt-1 text-[12px] uppercase tracking-wide text-zinc-500">
+                        {item.unitLabel}
+                      </p>
+                    ) : null}
                     
                     <p className="mt-1 text-[13px] font-bold text-black">
                       UGX {item.price.toLocaleString()}
@@ -96,7 +101,7 @@ export default function CartDrawer() {
                     <div className="mt-auto flex items-center justify-between">
                       <div className="flex items-center rounded-full border border-zinc-200 bg-white">
                         <button 
-                          onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                          onClick={() => updateQuantity(item.cartKey, item.quantity - 1)}
                           className="flex h-8 w-8 items-center justify-center text-black hover:bg-zinc-50 rounded-full"
                         >
                           <Minus size={14} />
@@ -105,7 +110,7 @@ export default function CartDrawer() {
                           {item.quantity}
                         </span>
                         <button 
-                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                          onClick={() => updateQuantity(item.cartKey, item.quantity + 1)}
                           className="flex h-8 w-8 items-center justify-center text-black hover:bg-zinc-50 rounded-full"
                         >
                           <Plus size={14} />

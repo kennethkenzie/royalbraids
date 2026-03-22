@@ -8,19 +8,20 @@ datasource db {
 }
 
 model Category {
-  id          Int       @id @default(autoincrement())
-  name        String
-  slug        String    @unique
-  banner      String?
+  id             Int        @id @default(autoincrement())
+  name           String
+  slug           String     @unique
+  description    String?
+  banner         String?
   featuredBanner String?
-  circleImage String?
-  isFeatured  Boolean   @default(false)
-  parentId    Int?
-  parent      Category? @relation("CategoryHierarchy", fields: [parentId], references: [id])
-  children    Category[] @relation("CategoryHierarchy")
-  products    Product[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  circleImage    String?
+  isFeatured     Boolean    @default(false)
+  parentId       Int?
+  parent         Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children       Category[] @relation("CategoryHierarchy")
+  products       Product[]
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
 }
 
 model Color {
@@ -34,22 +35,38 @@ model Color {
 }
 
 model Product {
-  id           Int         @id @default(autoincrement())
+  id           Int                 @id @default(autoincrement())
   name         String
-  slug         String      @unique
+  slug         String              @unique
   description  String?
   priceInCents Int
-  stock        Int         @default(0)
-  unit         String      @default("Piece")
-  status       String      @default("Active")
+  stock        Int                 @default(0)
+  unit         String              @default("Piece")
+  status       String              @default("Active")
+  isFeatured   Boolean             @default(false)
   image        String?
+  hoverImage   String?
   categoryId   Int
-  category     Category    @relation(fields: [categoryId], references: [id])
-  colors       Color[]     @relation("ProductColors")
+  category     Category            @relation(fields: [categoryId], references: [id])
+  colors       Color[]             @relation("ProductColors")
   variations   Variation[]
+  unitOptions  ProductUnitOption[]
   orderItems   OrderItem[]
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+}
+
+model ProductUnitOption {
+  id           Int      @id @default(autoincrement())
+  label        String
+  unit         String
+  priceInCents Int
+  stock        Int      @default(0)
+  sortOrder    Int      @default(0)
+  productId    Int
+  product      Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 model Variation {
@@ -86,13 +103,14 @@ model Reel {
   id           Int      @id @default(autoincrement())
   video        String
   poster       String?
-  productImage String
+  productImage String?
   title        String
   price        String
   link         String?  @default("/products")
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }
+
 model User {
   id        Int      @id @default(autoincrement())
   fullName  String
@@ -119,7 +137,6 @@ model Order {
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
 }
-
 
 model OrderItem {
   id        Int     @id @default(autoincrement())
@@ -160,10 +177,10 @@ model HeaderNavItem {
 }
 
 model SiteSettings {
-  id              Int      @id @default(1)
-  logoUrl         String?
-  ugFlagUrl       String?
-  contactEmail    String?
-  contactPhone    String?
-  updatedAt       DateTime @updatedAt
+  id           Int      @id @default(1)
+  logoUrl      String?
+  ugFlagUrl    String?
+  contactEmail String?
+  contactPhone String?
+  updatedAt    DateTime @updatedAt
 }

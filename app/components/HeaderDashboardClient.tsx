@@ -110,7 +110,7 @@ export default function HeaderDashboardClient({
 
   // Navbar handlers
   const handleAddNav = async () => {
-    const result = await addNavbarItem("New Link", "/inventory");
+    const result = await addNavbarItem("New Link", "/products");
     if (result.success) window.location.reload();
   };
 

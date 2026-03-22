@@ -3,8 +3,10 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 
 export type CartItem = {
+  cartKey: string;
   id: number;
   name: string;
+  unitLabel?: string;
   price: number;
   image: string | null;
   quantity: number;
@@ -13,8 +15,8 @@ export type CartItem = {
 type CartContextType = {
   cart: CartItem[];
   addToCart: (item: Omit<CartItem, "quantity">) => void;
-  removeFromCart: (id: number) => void;
-  updateQuantity: (id: number, quantity: number) => void;
+  removeFromCart: (cartKey: string) => void;
+  updateQuantity: (cartKey: string, quantity: number) => void;
   clearCart: () => void;
   isCartOpen: boolean;
   setIsCartOpen: (open: boolean) => void;
@@ -34,7 +36,18 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const savedCart = localStorage.getItem("royal_braids_cart");
     if (savedCart) {
       try {
-        setCart(JSON.parse(savedCart));
+        const parsed = JSON.parse(savedCart) as Array<Partial<CartItem>>;
+        setCart(
+          parsed.map((item) => ({
+            cartKey: item.cartKey || `${item.id}:${item.unitLabel || "default"}`,
+            id: item.id || 0,
+            name: item.name || "Product",
+            unitLabel: item.unitLabel,
+            price: item.price || 0,
+            image: item.image || null,
+            quantity: item.quantity || 1,
+          }))
+        );
       } catch (e) {
         console.error("Failed to parse cart", e);
       }
@@ -51,25 +64,25 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const addToCart = (item: Omit<CartItem, "quantity">) => {
     setCart((prev) => {
-      const existing = prev.find((i) => i.id === item.id);
+      const existing = prev.find((i) => i.cartKey === item.cartKey);
       if (existing) {
-        return prev.map((i) => i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i);
+        return prev.map((i) => i.cartKey === item.cartKey ? { ...i, quantity: i.quantity + 1 } : i);
       }
       return [...prev, { ...item, quantity: 1 }];
     });
     setIsCartOpen(true);
   };
 
-  const removeFromCart = (id: number) => {
-    setCart((prev) => prev.filter((i) => i.id !== id));
+  const removeFromCart = (cartKey: string) => {
+    setCart((prev) => prev.filter((i) => i.cartKey !== cartKey));
   };
 
-  const updateQuantity = (id: number, quantity: number) => {
+  const updateQuantity = (cartKey: string, quantity: number) => {
     if (quantity < 1) {
-      setCart((prev) => prev.filter((i) => i.id !== id));
+      setCart((prev) => prev.filter((i) => i.cartKey !== cartKey));
       return;
     }
-    setCart((prev) => prev.map((i) => i.id === id ? { ...i, quantity } : i));
+    setCart((prev) => prev.map((i) => i.cartKey === cartKey ? { ...i, quantity } : i));
   };
 
   const clearCart = () => setCart([]);

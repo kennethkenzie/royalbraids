@@ -23,6 +23,9 @@ export default async function EditProductPage({
     include: {
       colors: true,
       category: true,
+      unitOptions: {
+        orderBy: { sortOrder: "asc" },
+      },
       variations: true,
     },
   });
@@ -59,6 +62,25 @@ export default async function EditProductPage({
         stock: String(product.stock),
         category: product.category.name,
         unit: product.unit,
+        isFeatured: (product as any).isFeatured,
+        unitOptions:
+          product.unitOptions.length > 0
+            ? product.unitOptions.map((option) => ({
+                id: option.id,
+                label: option.label,
+                unit: option.unit,
+                price: String(option.priceInCents / 100),
+                stock: String(option.stock),
+              }))
+            : [
+                {
+                  id: 1,
+                  label: product.unit,
+                  unit: product.unit,
+                  price: String(product.priceInCents / 100),
+                  stock: String(product.stock),
+                },
+              ],
         status: product.status,
         variations:
           product.variations.length > 0
@@ -75,6 +97,7 @@ export default async function EditProductPage({
           code: color.code,
         })),
         imageUrl: product.image || "",
+        hoverImageUrl: (product as any).hoverImage || "",
       }}
     />
   );

@@ -26,9 +26,14 @@ export default async function EditUnitPage({ params }: EditUnitPageProps) {
     notFound();
   }
 
-  const productCount = await prisma.product.count({
-    where: { unit: unit.name },
-  });
+  const [productCount, unitOptionCount] = await Promise.all([
+    prisma.product.count({
+      where: { unit: unit.name },
+    }),
+    prisma.productUnitOption.count({
+      where: { unit: unit.name },
+    }),
+  ]);
 
   return (
     <div className="space-y-6">
@@ -67,7 +72,7 @@ export default async function EditUnitPage({ params }: EditUnitPageProps) {
             </div>
             <div className="flex items-center justify-between border-b border-zinc-50 py-2">
               <span className="text-zinc-500">Products using this unit</span>
-              <span className="font-medium text-black">{productCount}</span>
+              <span className="font-medium text-black">{productCount + unitOptionCount}</span>
             </div>
             <div className="py-2">
               <span className="block text-zinc-500">Usage</span>

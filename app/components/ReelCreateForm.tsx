@@ -8,24 +8,22 @@ import { useRouter } from "next/navigation";
 export default function ReelCreateForm() {
   const router = useRouter();
   const videoInputRef = useRef<HTMLInputElement>(null);
-  const productImageInputRef = useRef<HTMLInputElement>(null);
   const posterInputRef = useRef<HTMLInputElement>(null);
 
   const [videoUrl, setVideoUrl] = useState("");
-  const [productImageUrl, setProductImageUrl] = useState("");
   const [posterUrl, setPosterUrl] = useState("");
   const [title, setTitle] = useState("");
   const [price, setPrice] = useState("");
   const [link, setLink] = useState("/products");
 
-  const [isUploading, setIsUploading] = useState(""); // "video" | "product" | "poster" | ""
+  const [isUploading, setIsUploading] = useState(""); // "video" | "poster" | ""
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
   const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
 
-  const handleUpload = async (file: File, type: "video" | "product" | "poster") => {
+  const handleUpload = async (file: File, type: "video" | "poster") => {
     if (!cloudName || !uploadPreset) {
       setError("Cloudinary is not configured.");
       return;
@@ -49,7 +47,6 @@ export default function ReelCreateForm() {
       if (!response.ok) throw new Error(data?.error?.message || "Upload failed");
 
       if (type === "video") setVideoUrl(data.secure_url);
-      else if (type === "product") setProductImageUrl(data.secure_url);
       else if (type === "poster") setPosterUrl(data.secure_url);
     } catch (err: any) {
       setError(err.message);
@@ -60,8 +57,8 @@ export default function ReelCreateForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!videoUrl || !productImageUrl || !title || !price) {
-      setError("Please fill in all required fields and upload required media.");
+    if (!videoUrl || !title || !price) {
+      setError("Please fill in all required fields and upload the video.");
       return;
     }
 
@@ -70,7 +67,6 @@ export default function ReelCreateForm() {
 
     const formData = new FormData();
     formData.append("video", videoUrl);
-    formData.append("productImage", productImageUrl);
     formData.append("poster", posterUrl);
     formData.append("title", title);
     formData.append("price", price);
@@ -79,14 +75,11 @@ export default function ReelCreateForm() {
     const result = await createReel(formData);
     if (result.success) {
       router.refresh();
-      // Reset form or close modal if needed
       setVideoUrl("");
-      setProductImageUrl("");
       setPosterUrl("");
       setTitle("");
       setPrice("");
       setLink("/products");
-      // Scroll to top or show success
     } else {
       setError(result.error || "Failed to create reel");
     }
@@ -101,7 +94,7 @@ export default function ReelCreateForm() {
         </div>
       )}
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2 text-left">
         {/* Video Upload */}
         <div className="space-y-2">
           <label className="text-[13px] font-medium text-zinc-700">Video Reel (MP4) *</label>
@@ -144,46 +137,6 @@ export default function ReelCreateForm() {
         </div>
 
         <div className="space-y-6">
-          {/* Product Image Upload */}
-          <div className="space-y-2">
-            <label className="text-[13px] font-medium text-zinc-700">Product Image *</label>
-            <div 
-              onClick={() => productImageInputRef.current?.click()}
-              className="group relative flex h-[160px] cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-zinc-100 bg-zinc-50 transition-all hover:bg-zinc-100"
-            >
-              {productImageUrl ? (
-                <img src={productImageUrl} className="h-full w-full object-cover rounded-2xl" />
-              ) : (
-                <div className="flex flex-col items-center">
-                  {isUploading === "product" ? (
-                    <Loader2 className="h-6 w-6 animate-spin text-zinc-400" />
-                  ) : (
-                    <>
-                      <ImageIcon className="mb-2 h-6 w-6 text-zinc-300" />
-                      <p className="text-[12px] font-medium text-zinc-500">Add Product Photo</p>
-                    </>
-                  )}
-                </div>
-              )}
-              {productImageUrl && (
-                <button 
-                  type="button"
-                  onClick={(e) => { e.stopPropagation(); setProductImageUrl(""); }}
-                  className="absolute right-2 top-2 rounded-full bg-white/90 p-1 shadow-sm"
-                >
-                  <X className="h-3 w-3 text-black" />
-                </button>
-              )}
-            </div>
-            <input 
-              type="file" 
-              ref={productImageInputRef} 
-              className="hidden" 
-              accept="image/*" 
-              onChange={(e) => e.target.files?.[0] && handleUpload(e.target.files[0], "product")}
-            />
-          </div>
-
           {/* Info Fields */}
           <div className="space-y-4">
             <div>

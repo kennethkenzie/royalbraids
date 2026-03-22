@@ -15,7 +15,7 @@ export type ReelItem = {
   id: number;
   video: string;
   poster?: string | null;
-  productImage: string;
+  productImage?: string | null;
   title: string;
   price: string;
   link?: string | null;
@@ -83,13 +83,15 @@ function ReelCard({
 
       <div className={`mt-4 md:mt-8 w-[160px] md:w-[260px] rounded-[4px] border border-neutral-300 bg-white px-2 md:px-3 py-1.5 md:py-2 shadow-sm transition-opacity duration-700 ${isActive ? "opacity-100" : "opacity-0"}`}>
         <div className="flex items-center gap-2 md:gap-3">
-          <div className="h-[40px] w-[40px] md:h-[58px] md:w-[58px] shrink-0 overflow-hidden rounded-[2px] bg-white">
-            <img
-              src={item.productImage}
-              alt={item.title}
-              className="h-full w-full object-cover"
-            />
-          </div>
+          {item.productImage && (
+            <div className="h-[40px] w-[40px] md:h-[58px] md:w-[58px] shrink-0 overflow-hidden rounded-[2px] bg-white">
+              <img
+                src={item.productImage}
+                alt={item.title}
+                className="h-full w-full object-cover"
+              />
+            </div>
+          )}
 
           <div className="min-w-0 flex-1">
             <h3 className="line-clamp-2 text-[11px] md:text-[14px] font-semibold leading-[1.15] text-black">
