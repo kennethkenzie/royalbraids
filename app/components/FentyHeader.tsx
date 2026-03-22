@@ -4,6 +4,7 @@ import { Heart, ShoppingBag, User, Search, Menu, X } from "lucide-react";
 import { useState } from "react";
 import { cloudinaryImages } from "@/lib/cloudinary";
 import { useCart } from "@/app/context/CartContext";
+import { useWishlist } from "@/app/context/WishlistContext";
 import Link from "next/link";
 
 interface HeaderProps {
@@ -19,6 +20,7 @@ export default function FentyHeader({
 }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { setIsCartOpen, totalItems } = useCart();
+  const { totalWishlistItems } = useWishlist();
 
   const activePromoMessages = promoMessages.length > 0 ? promoMessages : [
     "Free delivery in Kampala on qualifying orders",
@@ -108,9 +110,18 @@ export default function FentyHeader({
               <Search className="h-4 w-4 stroke-[1.6]" />
             </button>
 
-            <button className="hover:opacity-70" aria-label="Wishlist">
-              <Heart className="h-4 w-4 stroke-[1.6]" />
-            </button>
+            <Link
+              href="/wishlist"
+              className="group relative flex h-10 w-10 items-center justify-center rounded-full hover:bg-zinc-50 transition-colors"
+              aria-label="Wishlist"
+            >
+              <Heart className="h-4 w-4 stroke-[1.6] text-black" />
+              {totalWishlistItems > 0 && (
+                <span className="absolute right-1 top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-black px-[4px] text-[10px] font-black leading-none text-white ring-2 ring-white transition-all group-hover:scale-110">
+                  {totalWishlistItems}
+                </span>
+              )}
+            </Link>
 
             <button 
               onClick={() => setIsCartOpen(true)}
@@ -166,6 +177,12 @@ export default function FentyHeader({
                 {item.name}
               </Link>
             ))}
+            <Link href="/wishlist" className="transition hover:opacity-60" onClick={() => setIsMenuOpen(false)}>
+              Wishlist
+            </Link>
+            <Link href="/cart" className="transition hover:opacity-60" onClick={() => setIsMenuOpen(false)}>
+              Cart
+            </Link>
           </nav>
           <div className="mt-auto pt-8 border-t border-zinc-100 italic text-[14px] text-zinc-500">
             Experience the Royal touch.

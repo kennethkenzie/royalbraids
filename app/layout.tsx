@@ -49,6 +49,7 @@ export const metadata: Metadata = {
 };
 
 import { CartProvider } from "./context/CartContext";
+import { WishlistProvider } from "./context/WishlistContext";
 import CartDrawer from "./components/CartDrawer";
 import ChatBot from "./components/ChatBot";
 import prisma from "@/lib/prisma";
@@ -66,14 +67,15 @@ export default async function RootLayout({
         className={`${jost.variable} font-sans antialiased`}
         suppressHydrationWarning
       >
-        <CartProvider>
-          {children}
-          <CartDrawer />
-          <ChatBot logoUrl={settings?.logoUrl} />
-        </CartProvider>
+        <WishlistProvider>
+          <CartProvider>
+            {children}
+            <CartDrawer />
+            <ChatBot logoUrl={settings?.logoUrl} />
+          </CartProvider>
+        </WishlistProvider>
       </body>
     </html>
   );
 }
-
 

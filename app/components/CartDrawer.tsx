@@ -137,13 +137,22 @@ export default function CartDrawer() {
             <p className="mb-6 text-[12px] text-zinc-400 italic">
               * Delivery calculated at checkout. Free in Kampala.
             </p>
-            <Link 
-              href="/checkout" 
-              onClick={() => setIsCartOpen(false)}
-              className="flex w-full items-center justify-center rounded-full bg-black py-4 text-[15px] font-bold uppercase tracking-widest text-white transition hover:bg-zinc-800"
-            >
-              Checkout Now
-            </Link>
+            <div className="space-y-3">
+              <Link 
+                href="/cart"
+                onClick={() => setIsCartOpen(false)}
+                className="flex w-full items-center justify-center rounded-full border border-zinc-200 py-4 text-[15px] font-bold uppercase tracking-widest text-black transition hover:bg-zinc-50"
+              >
+                View Cart
+              </Link>
+              <Link 
+                href="/checkout" 
+                onClick={() => setIsCartOpen(false)}
+                className="flex w-full items-center justify-center rounded-full bg-black py-4 text-[15px] font-bold uppercase tracking-widest text-white transition hover:bg-zinc-800"
+              >
+                Checkout Now
+              </Link>
+            </div>
           </div>
         )}
       </motion.div>

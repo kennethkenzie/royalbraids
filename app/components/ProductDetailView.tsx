@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useCart } from "@/app/context/CartContext";
+import { useWishlist } from "@/app/context/WishlistContext";
 import { getProductUnitOptions } from "@/lib/product-unit-options";
 
 type ProductDetailViewProps = {
@@ -45,6 +46,7 @@ export default function ProductDetailView({
   product,
 }: ProductDetailViewProps) {
   const { addToCart } = useCart();
+  const { toggleWishlist, isWishlisted } = useWishlist();
   const gallery = useMemo(() => {
     const images = product.image ? [product.image] : [];
     return images.length > 0 ? images : ["/auth-bg.png"];
@@ -85,6 +87,17 @@ export default function ProductDetailView({
         image: product.image,
       });
     }
+  };
+
+  const handleToggleWishlist = () => {
+    toggleWishlist({
+      id: product.id,
+      slug: product.slug,
+      name: product.name,
+      image: product.image,
+      price: selectedUnitOption.priceInCents,
+      unitLabel: selectedUnitOption.label,
+    });
   };
 
   const variationLabel =
@@ -173,8 +186,16 @@ export default function ProductDetailView({
                 {product.name}
               </h1>
 
-              <button className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-black/20 text-black transition hover:border-black">
-                <Heart className="h-5 w-5" />
+              <button
+                type="button"
+                onClick={handleToggleWishlist}
+                className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full border transition ${
+                  isWishlisted(product.id)
+                    ? "border-black bg-black text-white"
+                    : "border-black/20 text-black hover:border-black"
+                }`}
+              >
+                <Heart className={`h-5 w-5 ${isWishlisted(product.id) ? "fill-white" : ""}`} />
               </button>
             </div>
 
