@@ -113,6 +113,7 @@ import { WishlistProvider } from "./context/WishlistContext";
 import CartDrawer from "./components/CartDrawer";
 import ChatBot from "./components/ChatBot";
 import ClarityScript from "./components/ClarityScript";
+import GoogleAnalytics from "./components/GoogleAnalytics";
 import prisma from "@/lib/prisma";
 
 export default async function RootLayout({
@@ -148,6 +149,11 @@ export default async function RootLayout({
           dangerouslySetInnerHTML={{
             __html: JSON.stringify(organizationJsonLd),
           }}
+        />
+        <GoogleAnalytics 
+          measurementId={
+            process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "G-4TZ9V0EXCD"
+          } 
         />
         <ClarityScript
           projectId={
