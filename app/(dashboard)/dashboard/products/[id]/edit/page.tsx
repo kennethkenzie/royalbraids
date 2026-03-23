@@ -58,7 +58,7 @@ export default async function EditProductPage({
         id: product.id,
         name: product.name,
         description: product.description || "",
-        price: String(product.priceInCents / 100),
+        price: String(product.priceInCents),
         stock: String(product.stock),
         category: product.category.name,
         unit: product.unit,
@@ -69,7 +69,7 @@ export default async function EditProductPage({
                 id: option.id,
                 label: option.label,
                 unit: option.unit,
-                price: String(option.priceInCents / 100),
+                price: String(option.priceInCents),
                 stock: String(option.stock),
               }))
             : [
@@ -77,7 +77,7 @@ export default async function EditProductPage({
                   id: 1,
                   label: product.unit,
                   unit: product.unit,
-                  price: String(product.priceInCents / 100),
+                  price: String(product.priceInCents),
                   stock: String(product.stock),
                 },
               ],

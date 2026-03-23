@@ -13,12 +13,55 @@ interface HeaderProps {
   settings?: { logoUrl?: string; ugFlagUrl?: string };
 }
 
+const weavesMegaMenu = {
+  image: cloudinaryImages.footerFeature,
+  imageAlt: "Royal Braids weaves collection",
+  columns: [
+    {
+      title: "Human Hair",
+      links: [
+        { label: "Human Hair Weaves", href: "/products?category=weaves" },
+        { label: "Human Hair Blend Weaves", href: "/products?category=weaves" },
+        { label: "Unprocessed Hair Weave Bundles", href: "/products?category=weaves" },
+        { label: "Remy Hair Weaves", href: "/products?category=weaves" },
+      ],
+    },
+    {
+      title: "Care & Accessories",
+      links: [
+        { label: "Weave Care Products", href: "/products?category=haircare" },
+        { label: "Weave Accessories", href: "/products?category=haircare" },
+      ],
+    },
+    {
+      title: "Synthetic Hair",
+      links: [
+        { label: "Synthetic Hair Weaves", href: "/products?category=weaves" },
+        { label: "Organique Weaves", href: "/products?category=weaves" },
+        { label: "Clip In Weaves", href: "/products?category=weaves" },
+      ],
+    },
+  ],
+} as const;
+
+const closureDropdownLinks = [
+  { label: "Crown Closures", href: "/products?category=closure" },
+  { label: "Lace Part Closures", href: "/products?category=closure" },
+  { label: "4x4 Lace Closures", href: "/products?category=closure" },
+  { label: "5x5 Lace Closures", href: "/products?category=closure" },
+  { label: "2x6 Lace Closures", href: "/products?category=closure" },
+  { label: "13x4 Lace Closures", href: "/products?category=closure" },
+  { label: "360 Lace Closures", href: "/products?category=closure" },
+] as const;
+
 export default function FentyHeader({ 
   navLinks = [], 
   promoMessages = [],
   settings = {}
 }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isWeavesMegaMenuOpen, setIsWeavesMegaMenuOpen] = useState(false);
+  const [isClosureMenuOpen, setIsClosureMenuOpen] = useState(false);
   const { setIsCartOpen, totalItems } = useCart();
   const { totalWishlistItems } = useWishlist();
 
@@ -139,16 +182,114 @@ export default function FentyHeader({
         </div>
 
         {/* Desktop Navigation */}
-        <nav className="hidden items-center justify-center gap-10 border-b border-zinc-100 py-4 text-[17px] font-light font-sans text-black lg:flex uppercase tracking-widest">
-          {activeNavLinks.map((item, idx) => (
-            <Link
-              key={`${item.name}-${idx}`}
-              href={item.href}
-              className="transition hover:opacity-70 text-black decoration-zinc-200 underline-offset-8 hover:underline"
-            >
-              {item.name}
-            </Link>
-          ))}
+        <nav className="relative hidden items-center justify-center gap-10 border-b border-zinc-100 py-4 text-[17px] font-light font-sans text-black lg:flex uppercase tracking-widest">
+          {activeNavLinks.map((item, idx) => {
+            const isWeavesLink = item.name.toLowerCase() === "weaves";
+            const isClosureLink =
+              item.name.toLowerCase() === "closure" ||
+              item.name.toLowerCase() === "closures";
+
+            if (isClosureLink) {
+              return (
+                <div
+                  key={`${item.name}-${idx}`}
+                  className="relative"
+                  onMouseEnter={() => setIsClosureMenuOpen(true)}
+                  onMouseLeave={() => setIsClosureMenuOpen(false)}
+                >
+                  <Link
+                    href={item.href}
+                    className="transition hover:opacity-70 text-black decoration-zinc-200 underline-offset-8 hover:underline"
+                  >
+                    {item.name}
+                  </Link>
+
+                  {isClosureMenuOpen ? (
+                    <div className="absolute left-1/2 top-full z-50 min-w-[320px] -translate-x-1/2 pt-4">
+                      <div className="bg-[#efefef] px-8 py-7 shadow-[0_20px_60px_rgba(0,0,0,0.12)]">
+                        <ul className="space-y-4">
+                          {closureDropdownLinks.map((link) => (
+                            <li key={link.label}>
+                              <Link
+                                href={link.href}
+                                className="text-[13px] uppercase tracking-[0.16em] text-[#444] transition hover:text-black"
+                              >
+                                {link.label}
+                              </Link>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+              );
+            }
+
+            if (!isWeavesLink) {
+              return (
+                <Link
+                  key={`${item.name}-${idx}`}
+                  href={item.href}
+                  className="transition hover:opacity-70 text-black decoration-zinc-200 underline-offset-8 hover:underline"
+                >
+                  {item.name}
+                </Link>
+              );
+            }
+
+            return (
+              <div
+                key={`${item.name}-${idx}`}
+                className="relative"
+                onMouseEnter={() => setIsWeavesMegaMenuOpen(true)}
+                onMouseLeave={() => setIsWeavesMegaMenuOpen(false)}
+              >
+                <Link
+                  href={item.href}
+                  className="transition hover:opacity-70 text-black decoration-zinc-200 underline-offset-8 hover:underline"
+                >
+                  {item.name}
+                </Link>
+
+                {isWeavesMegaMenuOpen ? (
+                  <div className="absolute left-1/2 top-full z-50 w-[min(1292px,calc(100vw-64px))] -translate-x-1/2 pt-4">
+                    <div className="w-full bg-[#efefef] px-10 py-7 shadow-[0_20px_60px_rgba(0,0,0,0.12)] xl:px-14">
+                      <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_auto] items-start gap-10">
+                        {weavesMegaMenu.columns.map((column) => (
+                          <div key={column.title}>
+                            <h3 className="mb-4 text-[18px] font-bold uppercase tracking-normal text-[#333]">
+                              {column.title}
+                            </h3>
+                            <ul className="space-y-4">
+                              {column.links.map((link) => (
+                                <li key={link.label}>
+                                  <Link
+                                    href={link.href}
+                                    className="text-[13px] uppercase tracking-[0.16em] text-[#444] transition hover:text-black"
+                                  >
+                                    {link.label}
+                                  </Link>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        ))}
+
+                        <div className="flex justify-end">
+                          <img
+                            src={weavesMegaMenu.image}
+                            alt={weavesMegaMenu.imageAlt}
+                            className="h-auto w-[360px] min-w-[280px] object-cover"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+            );
+          })}
         </nav>
       </div>
 

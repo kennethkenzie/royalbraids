@@ -336,7 +336,7 @@ export default function ProductEditorForm({
       .map((option) => ({
         label: option.label.trim(),
         unit: option.unit.trim(),
-        price: Math.round(parseFloat(option.price || "0") * 100),
+        price: Math.round(parseFloat(option.price || "0")),
         stock: parseInt(option.stock || "0", 10),
       }))
       .filter((option) => option.label && option.unit);
