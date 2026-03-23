@@ -112,6 +112,7 @@ import { CartProvider } from "./context/CartContext";
 import { WishlistProvider } from "./context/WishlistContext";
 import CartDrawer from "./components/CartDrawer";
 import ChatBot from "./components/ChatBot";
+import ClarityScript from "./components/ClarityScript";
 import prisma from "@/lib/prisma";
 
 export default async function RootLayout({
@@ -147,6 +148,11 @@ export default async function RootLayout({
           dangerouslySetInnerHTML={{
             __html: JSON.stringify(organizationJsonLd),
           }}
+        />
+        <ClarityScript
+          projectId={
+            process.env.NEXT_PUBLIC_CLARITY_PROJECT_ID || "w0ftfc1oo3"
+          }
         />
         <WishlistProvider>
           <CartProvider>
