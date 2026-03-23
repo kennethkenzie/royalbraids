@@ -12,7 +12,7 @@ const slides = [
     eyebrow: "EXCLUSIVE",
     title: "SIGNATURE\nBRAIDING\nSTYLES",
     description:
-      "Elevate your look with our exclusive collection of hand-crafted styles designed for elegance.",
+      "Shop premium braiding hair in Uganda with signature styles, quality texture, and elegant everyday wear.",
     button: "SHOP COLLECTION",
     bg: "bg-[#e5d1c8]",
     overlay: "from-[#e5d1c8]/70 to-[#e5d1c8]/30",
@@ -23,7 +23,7 @@ const slides = [
     eyebrow: "WHAT'S NEW",
     title: "DISCOVER\nOUR NEW\nCOLLECTION",
     description:
-      "Modern extensions and braiding styles designed for the sophisticated woman. Explore our latest arrivals.",
+      "Discover new hair extensions, crochet hair, weaves, and closures curated for Kampala shoppers and nationwide delivery.",
     button: "DISCOVER NOW",
     bg: "bg-[#dec7ba]",
     overlay: "from-[#dec7ba]/70 to-[#dec7ba]/30",

@@ -108,9 +108,9 @@ export default function RoyalBridalsFooter() {
           <h3 className="text-[16px] font-bold uppercase md:text-[18px]">About</h3>
 
           <p className="mt-4 max-w-[420px] text-[12px] leading-6 text-white/90 md:text-[14px]">
-            Royal Braids Ltd Uganda is inspired by timeless elegance and modern
-            bridal fashion, offering beautiful gowns, accessories, and styling
-            pieces that make every bride feel confident, graceful, and radiant.
+            Royal Braids Ltd Uganda offers premium braiding hair, weaves,
+            closures, crochet hair, and hair care essentials for customers in
+            Kampala and across Uganda.
           </p>
 
           <div className="mt-6 space-y-3 text-[13px] md:space-y-4 md:text-[15px]">
@@ -118,7 +118,7 @@ export default function RoyalBridalsFooter() {
               About the Brand
             </a>
             <a href="#" className="block hover:text-white/70">
-              Bridal Collections
+              Hair Collections
             </a>
             <a href="#" className="block hover:text-white/70">
               Student Discounts

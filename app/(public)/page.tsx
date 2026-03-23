@@ -5,8 +5,16 @@ import FeaturedCategorySections from "../components/FeaturedCategorySections";
 import LatestProductsSection from "../components/LatestProductsSection";
 import ReelsProductCarousel from "../components/ReelsProductCarousel";
 import FeaturedProductsSection from "../components/FeaturedProductsSection";
+import { buildMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
+export const metadata = buildMetadata({
+  title: "Hair Extensions Uganda | Braids, Weaves, Closures & Crochet Hair",
+  description:
+    "Shop hair extensions in Uganda with premium braids, weaves, closures, crochet hair, and salon-quality hair care from Royal Braids Ltd in Kampala.",
+  path: "/",
+  image: "/auth-bg.png",
+});
 
 const defaultSections = [
   { type: "HeroCarousel", title: "Hero Carousel", order: 0 },

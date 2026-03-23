@@ -80,7 +80,7 @@ function TrackOrderContent() {
       )}
 
       <div className="mb-12">
-        <h2 className="text-[32px] font-black text-black uppercase tracking-tight leading-none">Track Your Order</h2>
+        <h1 className="text-[32px] font-black text-black uppercase tracking-tight leading-none">Track Your Order</h1>
         <p className="mt-3 text-zinc-500">Enter your order number to see the current status of your delivery.</p>
         
         <form onSubmit={handleSearch} className="mt-8 flex gap-3">

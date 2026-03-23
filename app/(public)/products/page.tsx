@@ -1,6 +1,8 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft, Star } from "lucide-react";
 import prisma from "@/lib/prisma";
+import { buildMetadata, sanitizeDescription } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -43,10 +45,10 @@ export default async function ProductsPage({
 
         <div className="mb-10">
           <h1 className="text-[34px] font-black uppercase tracking-tight text-black">
-            Products
+            Hair Extensions & Hair Care
           </h1>
           <p className="mt-3 text-[17px] text-zinc-600">
-            Browse live inventory from the Royal Braids catalog.
+            Browse braiding hair, crochet hair, weaves, closures, and hair care products available in Uganda from the Royal Braids catalog.
           </p>
         </div>
 
@@ -104,4 +106,50 @@ export default async function ProductsPage({
       </div>
     </section>
   );
+}
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ category?: string }>;
+}): Promise<Metadata> {
+  const { category } = await searchParams;
+
+  if (!category) {
+    return buildMetadata({
+      title: "Shop Hair Extensions Uganda",
+      description:
+        "Browse hair extensions in Uganda from Royal Braids including braiding hair, weaves, closures, crochet hair, and hair care essentials.",
+      path: "/products",
+    });
+  }
+
+  const selectedCategory = await prisma.category.findUnique({
+    where: { slug: category },
+    select: {
+      name: true,
+      description: true,
+      banner: true,
+      featuredBanner: true,
+    },
+  });
+
+  if (!selectedCategory) {
+    return buildMetadata({
+      title: "Shop Products",
+      description:
+        "Browse the Royal Braids product catalog for premium hair collections and essentials.",
+      path: `/products?category=${encodeURIComponent(category)}`,
+    });
+  }
+
+  return buildMetadata({
+    title: `${selectedCategory.name} Collection`,
+    description: sanitizeDescription(
+      selectedCategory.description,
+      `Browse ${selectedCategory.name.toLowerCase()} products from Royal Braids Ltd.`,
+    ),
+    path: `/products?category=${encodeURIComponent(category)}`,
+    image: selectedCategory.featuredBanner || selectedCategory.banner,
+  });
 }
