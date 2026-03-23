@@ -2,6 +2,8 @@ import prisma from "@/lib/prisma";
 import HeaderDashboardClient from "@/app/components/HeaderDashboardClient";
 import { Layout } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 export default async function NavbarManagementPage() {
   const [topbar, nav, settings] = await Promise.all([
     (prisma as any).topbarMessage.findMany({ orderBy: { order: "asc" } }),

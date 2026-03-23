@@ -121,7 +121,13 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const settings = await (prisma as any).siteSettings.findUnique({ where: { id: 1 } });
+  let settings = null;
+  try {
+    settings = await (prisma as any).siteSettings.findUnique({ where: { id: 1 } });
+  } catch (error) {
+    console.error("Failed to fetch site settings:", error);
+  }
+
   const organizationJsonLd = {
     "@context": "https://schema.org",
     "@type": "Store",
