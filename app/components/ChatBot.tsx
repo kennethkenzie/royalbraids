@@ -1,35 +1,42 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
-import { 
-  MessageSquare, 
-  X, 
-  Send, 
-  Maximize2, 
-  Minimize2,
-  Sparkles,
-  User,
+import { useMemo, useRef, useState, useEffect } from "react";
+import {
+  X,
+  Send,
   Package,
-  RefreshCcw,
-  HelpCircle
+  RotateCcw,
+  MessageCircle,
+  MessageSquareMore,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 
-const QUICK_ACTIONS = [
-  { label: "Track My Order", icon: <Package className="h-4 w-4" />, message: "I want to track my order." },
-  { label: "Returns & Exchanges", icon: <RefreshCcw className="h-4 w-4" />, message: "How do I start a return?" },
-  { label: "Product Help", icon: <Sparkles className="h-4 w-4" />, message: "I need a product recommendation." },
-  { label: "General Help", icon: <HelpCircle className="h-4 w-4" />, message: "I have a general question." },
-];
+type Message = {
+  id: number;
+  text: string;
+  sender: "bot" | "user" | "agent";
+  time: string;
+};
 
-export default function ChatBot({ logoUrl }: { logoUrl?: string }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState([
-    { role: "bot", content: "Hi there! Welcome to Royal Braids. How can I help you today?", time: new Date() }
-  ]);
-  const [inputValue, setInputValue] = useState("");
+const DEFAULT_WHATSAPP_NUMBER = "256781662904";
+
+export default function ChatBot({
+  logoUrl,
+  phoneNumber,
+}: {
+  logoUrl?: string;
+  phoneNumber?: string;
+}) {
+  const [isOpen, setIsOpen] = useState(true);
+  const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [sessionId, setSessionId] = useState("");
+
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const whatsappNumber = (phoneNumber || DEFAULT_WHATSAPP_NUMBER).replace(
+    /[^0-9]/g,
+    "",
+  );
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -37,166 +44,289 @@ export default function ChatBot({ logoUrl }: { logoUrl?: string }) {
     }
   }, [messages, isTyping]);
 
-  const handleSendMessage = (content: string) => {
-    if (!content.trim()) return;
+  useEffect(() => {
+    const existingSessionId =
+      window.localStorage.getItem("royal_braids_chat_session") ||
+      crypto.randomUUID();
 
-    const newUserMessage = { role: "user", content, time: new Date() };
-    setMessages(prev => [...prev, newUserMessage]);
-    setInputValue("");
+    window.localStorage.setItem("royal_braids_chat_session", existingSessionId);
+    setSessionId(existingSessionId);
+  }, []);
+
+  useEffect(() => {
+    if (!sessionId) return;
+
+    let cancelled = false;
+
+    async function initializeSession() {
+      try {
+        const response = await fetch("/api/chat/session", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ sessionId }),
+        });
+
+        const data = await response.json();
+
+        if (!cancelled && Array.isArray(data?.messages)) {
+          setMessages(data.messages);
+        }
+      } catch (error) {
+        console.error("Failed to initialize chat session:", error);
+      }
+    }
+
+    void initializeSession();
+
+    const interval = window.setInterval(async () => {
+      try {
+        const response = await fetch(
+          `/api/chat/messages?sessionId=${encodeURIComponent(sessionId)}`,
+          {
+            cache: "no-store",
+          },
+        );
+        const data = await response.json();
+
+        if (!cancelled && Array.isArray(data?.messages)) {
+          setMessages(data.messages);
+        }
+      } catch (error) {
+        console.error("Failed to refresh chat messages:", error);
+      }
+    }, 5000);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+    };
+  }, [sessionId]);
+
+  async function sendMessage(text: string) {
+    if (!sessionId) return;
+
     setIsTyping(true);
 
-    // Simulate bot response
-    setTimeout(() => {
-      let botResponse = "Thanks for your message! Our team will get back to you shortly. For immediate answers, check our Help & FAQ center.";
-      
-      if (content.toLowerCase().includes("track")) {
-        botResponse = "You can track your order live on our 'Track Order' page. You'll need your order number and email.";
-      } else if (content.toLowerCase().includes("return")) {
-        botResponse = "Our returns center is open 24/7! You can start a return within 14 days of delivery for any unopened products.";
-      } else if (content.toLowerCase().includes("product") || content.toLowerCase().includes("recommend")) {
-        botResponse = "I'd love to help! Are you looking for braids, weaves, or specific textures like crochet?";
-      }
+    try {
+      const response = await fetch("/api/chat/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ sessionId, text }),
+      });
 
-      setMessages(prev => [...prev, { role: "bot", content: botResponse, time: new Date() }]);
+      const data = await response.json();
+
+      if (Array.isArray(data?.messages)) {
+        setMessages((prev) => {
+          const knownIds = new Set(prev.map((message) => message.id));
+          const nextMessages = [...prev];
+
+          data.messages.forEach((message: Message) => {
+            if (!knownIds.has(message.id)) {
+              nextMessages.push(message);
+            }
+          });
+
+          return nextMessages;
+        });
+      }
+    } catch (error) {
+      console.error("Failed to send chat message:", error);
+    } finally {
       setIsTyping(false);
-    }, 1500);
-  };
+    }
+  }
+
+  function handleSend() {
+    if (!input.trim()) return;
+
+    const text = input.trim();
+    setInput("");
+    void sendMessage(text);
+  }
+
+  function handleQuickReply(text: string) {
+    void sendMessage(text);
+  }
+
+  const whatsappUrl = useMemo(() => {
+    const transcript = messages
+      .map((msg) => {
+        const sender = msg.sender === "user" ? "Customer" : "Royal Assistant";
+        return `${sender}: ${msg.text}`;
+      })
+      .join("\n");
+
+    const finalMessage =
+      `Hello Royal Braids, I was chatting on your website.\n\n` +
+      `Chat transcript:\n${transcript}\n\n` +
+      `Please continue with me here on WhatsApp.`;
+
+    return `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
+      finalMessage,
+    )}`;
+  }, [messages, whatsappNumber]);
 
   return (
-    <div className="fixed bottom-6 right-6 z-[999] font-sans">
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="mb-4 flex h-[500px] w-[360px] flex-col overflow-hidden rounded-2xl bg-white shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] border border-zinc-100"
-          >
-            {/* Header */}
-            <div className="flex h-20 items-center justify-between bg-black px-6 text-white border-b border-white/5">
-              <div className="flex items-center gap-3">
-                <div className="relative flex h-14 w-14 items-center justify-center transition-transform group-hover:scale-110 overflow-hidden">
-                  {logoUrl ? (
-                    <img src={logoUrl} alt="Bot Avatar" className="h-full w-full object-contain" />
-                  ) : (
-                    <Sparkles className="h-6 w-6 text-amber-500" />
-                  )}
-                  <span className="absolute bottom-1 right-1 h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-black" />
+    <>
+      {!isOpen && (
+        <button
+          onClick={() => setIsOpen(true)}
+          className="fixed bottom-6 left-6 z-50 flex h-16 w-16 items-center justify-center rounded-full bg-black text-white shadow-2xl transition hover:scale-105"
+          aria-label="Open chat"
+        >
+          <MessageCircle size={28} />
+        </button>
+      )}
+
+      {isOpen && (
+        <div className="fixed bottom-6 left-6 z-50 w-[370px] overflow-hidden rounded-[22px] border border-[#e8e8e8] bg-white shadow-2xl">
+          <div className="flex items-center justify-between bg-black px-4 py-4">
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border border-[#b88a2d] bg-[#111]">
+                  <img
+                    src={logoUrl || "/royal-braids-logo.png"}
+                    alt="Royal Braids Logo"
+                    className="h-full w-full object-cover"
+                  />
                 </div>
-                <div>
-                  <h3 className="text-[15px] font-bold tracking-tight">Royal Assistant</h3>
-                  <p className="text-[11px] font-medium text-emerald-400 uppercase tracking-widest">Online Now</p>
-                </div>
+                <span className="absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-black bg-[#00d26a]" />
               </div>
-              <button 
-                onClick={() => setIsOpen(false)}
-                className="rounded-full p-2 hover:bg-white/10 transition-colors"
+
+              <div>
+                <h3 className="text-base font-semibold text-white">
+                  Royal Assistant
+                </h3>
+                <p className="text-sm font-semibold uppercase tracking-wide text-[#00d26a]">
+                  Online Now
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setIsOpen(false)}
+              className="text-white transition hover:opacity-80"
+              aria-label="Close chat"
+            >
+              <X size={22} />
+            </button>
+          </div>
+
+          <div className="bg-[#f6f6f6] px-5 py-5">
+            <div
+              ref={scrollRef}
+              className="h-[310px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-gray-300"
+            >
+              <div className="space-y-4">
+                {messages.map((message) => (
+                  <div
+                    key={message.id}
+                    className={`flex ${
+                      message.sender === "user" ? "justify-end" : "justify-start"
+                    }`}
+                  >
+                    <div
+                      className={`max-w-[255px] rounded-[18px] px-4 py-3 shadow-sm ${
+                        message.sender === "user"
+                          ? "bg-black text-white"
+                          : message.sender === "agent"
+                            ? "border border-[#d3f3df] bg-[#ecfff4] text-[#1f4d31]"
+                            : "border border-[#e4e4e4] bg-white text-[#333]"
+                      }`}
+                    >
+                      <p className="text-[15px] leading-6">{message.text}</p>
+                      <span
+                        className={`mt-2 block text-[11px] ${
+                          message.sender === "user"
+                            ? "text-white/70"
+                            : message.sender === "agent"
+                              ? "text-[#5a8b68]"
+                              : "text-[#999]"
+                        }`}
+                      >
+                        {message.time}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+
+                {isTyping && (
+                  <div className="flex justify-start">
+                    <div className="rounded-[18px] border border-[#e4e4e4] bg-white px-4 py-3 shadow-sm">
+                      <p className="text-sm text-[#777]">Typing...</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="mt-5 flex flex-wrap gap-3">
+              <button
+                onClick={() => handleQuickReply("Track My Order")}
+                className="flex items-center gap-2 rounded-full border border-[#dbdbdb] bg-white px-4 py-3 text-[14px] font-medium text-[#444] transition hover:bg-[#f2f2f2]"
               >
-                <X className="h-5 w-5" />
+                <Package size={16} />
+                Track My Order
+              </button>
+
+              <button
+                onClick={() => handleQuickReply("Returns & Exchanges")}
+                className="flex items-center gap-2 rounded-full border border-[#dbdbdb] bg-white px-4 py-3 text-[14px] font-medium text-[#444] transition hover:bg-[#f2f2f2]"
+              >
+                <RotateCcw size={16} />
+                Returns & Exchanges
               </button>
             </div>
 
-            {/* Messages Area */}
-            <div 
-              ref={scrollRef}
-              className="flex-1 overflow-y-auto bg-[#fafafa] p-6 space-y-4 scroll-smooth"
-            >
-              {messages.map((msg, idx) => (
-                <div 
-                  key={idx} 
-                  className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-                >
-                  <div className={`max-w-[80%] rounded-2xl px-4 py-3 text-[14px] leading-relaxed ${
-                    msg.role === "user" 
-                      ? "bg-black text-white rounded-br-none shadow-md" 
-                      : "bg-white text-zinc-800 border border-zinc-100 rounded-bl-none shadow-sm"
-                  }`}>
-                    {msg.content}
-                    <div className={`mt-1 text-[9px] uppercase font-bold tracking-tighter ${
-                      msg.role === "user" ? "text-white/40" : "text-zinc-400"
-                    }`}>
-                      {msg.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </div>
-                  </div>
-                </div>
-              ))}
-              {isTyping && (
-                <div className="flex justify-start">
-                  <div className="bg-white border border-zinc-100 rounded-2xl rounded-bl-none px-4 py-3 shadow-sm">
-                    <div className="flex gap-1.5">
-                      <div className="h-1.5 w-1.5 animate-bounce rounded-full bg-zinc-300" />
-                      <div className="h-1.5 w-1.5 animate-bounce rounded-full bg-zinc-300 delay-100" />
-                      <div className="h-1.5 w-1.5 animate-bounce rounded-full bg-zinc-300 delay-200" />
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Footer / Input */}
-            <div className="border-t border-zinc-100 bg-white p-4">
-              {/* Quick Actions Scrollable */}
-              {messages.length < 3 && !isTyping && (
-                <div className="mb-4 flex gap-2 overflow-x-auto pb-2 scrollbar-hide no-scrollbar">
-                  {QUICK_ACTIONS.map((action, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => handleSendMessage(action.message)}
-                      className="flex shrink-0 items-center gap-2 rounded-full border border-zinc-200 bg-zinc-50 px-4 py-2 text-[12px] font-semibold text-zinc-700 transition hover:bg-black hover:text-white hover:border-black"
-                    >
-                      {action.icon}
-                      {action.label}
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              <form 
-                className="relative flex items-center gap-2"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleSendMessage(inputValue);
-                }}
-              >
+            <div className="mt-5 rounded-full border border-[#dfdfdf] bg-white px-4 py-2">
+              <div className="flex items-center gap-3">
                 <input
                   type="text"
                   placeholder="Type your message..."
-                  className="h-11 w-full rounded-full border border-zinc-200 bg-zinc-50 pl-5 pr-12 text-[14px] outline-none transition-all focus:border-black focus:bg-white focus:ring-1 focus:ring-black/5"
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleSend()}
+                  className="h-10 flex-1 bg-transparent text-[14px] text-[#333] outline-none placeholder:text-[#c8c8c8]"
                 />
-                <button 
-                  type="submit"
-                  disabled={!inputValue.trim()}
-                  className="absolute right-1.5 h-8 w-8 flex items-center justify-center rounded-full bg-black text-white transition disabled:bg-zinc-200 hover:scale-105 active:scale-95"
-                >
-                  <Send className="h-3.5 w-3.5" />
-                </button>
-              </form>
-              <p className="mt-2 text-center text-[10px] uppercase font-bold tracking-widest text-zinc-300">
-                AI Assistant Powered by Royal Braids
-              </p>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
-      <motion.button
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        onClick={() => setIsOpen(!isOpen)}
-        className={`flex h-14 w-14 items-center justify-center rounded-full shadow-lg transition-all duration-500 ${
-          isOpen ? "bg-black text-white rotate-90" : "bg-black text-white hover:bg-zinc-800"
-        }`}
-      >
-        {isOpen ? <X className="h-6 w-6" /> : <MessageSquare className="h-7 w-7" />}
-        {!isOpen && (
-          <span className="absolute -right-1 -top-1 flex h-4 w-4">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75"></span>
-            <span className="relative inline-flex h-4 w-4 rounded-full bg-amber-500"></span>
-          </span>
-        )}
-      </motion.button>
-    </div>
+                <button
+                  onClick={handleSend}
+                  className="flex h-11 w-11 items-center justify-center rounded-full bg-[#ededed] text-[#9a9a9a] transition hover:bg-black hover:text-white"
+                  aria-label="Send message"
+                >
+                  <Send size={18} />
+                </button>
+              </div>
+            </div>
+
+            <a
+              href={whatsappUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-[#25D366] px-4 py-3 text-sm font-semibold text-white transition hover:opacity-90"
+            >
+              <MessageSquareMore size={18} />
+              Continue on WhatsApp
+            </a>
+
+            <p className="mt-4 text-center text-[11px] font-semibold uppercase tracking-[1.4px] text-[#c6c6c6]">
+              AI Assistant Powered by Royal Braids
+            </p>
+          </div>
+        </div>
+      )}
+    </>
   );
+}
+
+function formatTime(date: Date) {
+  return date.toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }

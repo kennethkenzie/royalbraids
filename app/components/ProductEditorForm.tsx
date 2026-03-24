@@ -92,6 +92,7 @@ type ProductEditorFormProps = {
   units?: Array<{ id: number; name: string }>;
   categories?: Array<{ id: number; name: string }>;
   availableColors?: ProductColor[];
+  fullWidth?: boolean;
 };
 
 const defaultProduct: ProductFormData = {
@@ -116,6 +117,7 @@ export default function ProductEditorForm({
   units = [],
   categories = [],
   availableColors = [],
+  fullWidth = false,
 }: ProductEditorFormProps) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -419,7 +421,11 @@ export default function ProductEditorForm({
   };
 
   return (
-    <div className="mx-auto max-w-[1000px] space-y-8 pb-20 font-sans">
+    <div
+      className={`space-y-8 pb-20 font-sans ${
+        fullWidth ? "w-full max-w-none" : "mx-auto max-w-[1000px]"
+      }`}
+    >
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
           <Link

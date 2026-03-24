@@ -135,7 +135,7 @@ export default async function RootLayout({
     url: getSiteUrl(),
     image: absoluteUrl("/auth-bg.png"),
     email: settings?.contactEmail || "info@royalbraids.ug",
-    telephone: settings?.contactPhone || "+256793695678",
+    telephone: settings?.contactPhone || "+256781662904",
     address: {
       "@type": "PostalAddress",
       addressLocality: "Kampala",
@@ -170,7 +170,10 @@ export default async function RootLayout({
           <CartProvider>
             {children}
             <CartDrawer />
-            <ChatBot logoUrl={settings?.logoUrl} />
+            <ChatBot
+              logoUrl={settings?.logoUrl}
+              phoneNumber={settings?.contactPhone}
+            />
           </CartProvider>
         </WishlistProvider>
       </body>

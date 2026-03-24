@@ -90,10 +90,6 @@ function ProductCard({ product }: { product: Product }) {
           UGX {product.priceInCents.toLocaleString()}
         </p>
 
-        <p className="mt-2 text-[11px] font-medium uppercase tracking-[0.18em] text-zinc-500">
-          Default: {product.unit}
-        </p>
-
         <Link
           href={`/products/${product.slug}`}
           className="mt-6 inline-flex h-11 items-center justify-center border border-black px-8 text-[12px] font-bold uppercase tracking-widest text-black transition-colors hover:bg-black hover:text-white"

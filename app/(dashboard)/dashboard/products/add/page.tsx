@@ -40,6 +40,7 @@ export default async function AddProductPage() {
       units={units}
       categories={categories}
       availableColors={colors}
+      fullWidth
     />
   );
 }
