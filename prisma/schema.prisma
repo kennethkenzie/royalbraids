@@ -15,6 +15,8 @@ model Category {
   banner         String?
   featuredBanner String?
   circleImage    String?
+  circleColor    String?
+  backgroundColor String?
   isFeatured     Boolean    @default(false)
   parentId       Int?
   parent         Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])

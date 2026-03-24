@@ -111,7 +111,6 @@ export const metadata: Metadata = {
 import { CartProvider } from "./context/CartContext";
 import { WishlistProvider } from "./context/WishlistContext";
 import CartDrawer from "./components/CartDrawer";
-import ChatBot from "./components/ChatBot";
 import ClarityScript from "./components/ClarityScript";
 import GoogleAnalytics from "./components/GoogleAnalytics";
 import prisma from "@/lib/prisma";
@@ -170,10 +169,6 @@ export default async function RootLayout({
           <CartProvider>
             {children}
             <CartDrawer />
-            <ChatBot
-              logoUrl={settings?.logoUrl}
-              phoneNumber={settings?.contactPhone}
-            />
           </CartProvider>
         </WishlistProvider>
       </body>

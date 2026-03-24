@@ -5,6 +5,7 @@ import { ArrowLeft, Image } from "lucide-react";
 import { notFound, redirect } from "next/navigation";
 import CategoryBannerField from "@/app/components/CategoryBannerField";
 import CategoryCircleImageField from "@/app/components/CategoryCircleImageField";
+import CategoryColorField from "@/app/components/CategoryColorField";
 
 export const dynamic = "force-dynamic";
 
@@ -141,6 +142,22 @@ export default async function EditCategoryPage({
               uploadErrorLabel="Full banner"
             />
             <CategoryCircleImageField defaultValue={(category as any).circleImage ?? ""} />
+            <div className="grid gap-4 md:grid-cols-2">
+              <CategoryColorField
+                name="circleColor"
+                id="circleColor"
+                label="Banner Circle Color"
+                defaultValue={(category as any).circleColor ?? "#4f43a5"}
+                helpText="Controls the large circular card color on this category banner."
+              />
+              <CategoryColorField
+                name="backgroundColor"
+                id="backgroundColor"
+                label="Banner Background Color"
+                defaultValue={(category as any).backgroundColor ?? "#e9e9e9"}
+                helpText="Controls the outer background color of this category banner section."
+              />
+            </div>
 
             <div className="flex items-start gap-3 rounded-xl bg-amber-50 border border-amber-100 px-4 py-4">
               <input
@@ -216,6 +233,18 @@ export default async function EditCategoryPage({
               <span className="text-zinc-500">Circle Image</span>
               <span className={`font-medium ${(category as any).circleImage ? "text-emerald-600" : "text-zinc-400"}`}>
                 {(category as any).circleImage ? "Set" : "Not set"}
+              </span>
+            </div>
+            <div className="flex items-center justify-between py-2">
+              <span className="text-zinc-500">Circle Color</span>
+              <span className="font-medium text-black">
+                {(category as any).circleColor || "Default"}
+              </span>
+            </div>
+            <div className="flex items-center justify-between py-2">
+              <span className="text-zinc-500">Background Color</span>
+              <span className="font-medium text-black">
+                {(category as any).backgroundColor || "Default"}
               </span>
             </div>
           </div>

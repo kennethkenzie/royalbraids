@@ -137,7 +137,9 @@ export default async function FeaturedCategorySections() {
                     category={{
                       name: category.name,
                       description: (category as any).description,
-                      banner: (category as any).featuredBanner
+                      banner: (category as any).featuredBanner,
+                      circleColor: (category as any).circleColor,
+                      backgroundColor: (category as any).backgroundColor,
                     }} 
                   />
                 </div>

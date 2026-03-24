@@ -5,6 +5,7 @@ import { Plus } from "lucide-react";
 import { createCategory } from "@/lib/actions";
 import CategoryBannerField from "@/app/components/CategoryBannerField";
 import CategoryCircleImageField from "@/app/components/CategoryCircleImageField";
+import CategoryColorField from "@/app/components/CategoryColorField";
 
 const initialState = {
   success: false,
@@ -80,6 +81,22 @@ export default function CategoryCreateForm({
         uploadErrorLabel="Full banner"
       />
       <CategoryCircleImageField />
+      <div className="grid gap-4 md:grid-cols-2">
+        <CategoryColorField
+          name="circleColor"
+          id="circleColor"
+          label="Banner Circle Color"
+          defaultValue="#4f43a5"
+          helpText="Controls the large circular card color on the category banner."
+        />
+        <CategoryColorField
+          name="backgroundColor"
+          id="backgroundColor"
+          label="Banner Background Color"
+          defaultValue="#e9e9e9"
+          helpText="Controls the outer banner section background color."
+        />
+      </div>
 
       <div className="flex items-center gap-3 rounded-xl border border-amber-100 bg-amber-50 px-4 py-3">
         <input

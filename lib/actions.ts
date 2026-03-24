@@ -449,6 +449,8 @@ export async function createCategory(
     const banner = formData.get("banner") as string | null;
     const featuredBanner = formData.get("featuredBanner") as string | null;
     const circleImage = formData.get("circleImage") as string | null;
+    const circleColor = formData.get("circleColor") as string | null;
+    const backgroundColor = formData.get("backgroundColor") as string | null;
     const isFeatured = formData.get("isFeatured") === "on";
     const parentId = await resolveParentCategoryId(formData.get("parentId"));
 
@@ -468,6 +470,8 @@ export async function createCategory(
         banner: banner?.trim() || null,
         featuredBanner: featuredBanner?.trim() || null,
         circleImage: circleImage?.trim() || null,
+        circleColor: circleColor?.trim() || null,
+        backgroundColor: backgroundColor?.trim() || null,
         isFeatured,
         parentId,
       },
@@ -505,6 +509,8 @@ export async function updateCategory(id: number, formData: FormData) {
     const banner = formData.get("banner") as string | null;
     const featuredBanner = formData.get("featuredBanner") as string | null;
     const circleImage = formData.get("circleImage") as string | null;
+    const circleColor = formData.get("circleColor") as string | null;
+    const backgroundColor = formData.get("backgroundColor") as string | null;
     const isFeatured = formData.get("isFeatured") === "on";
     const parentId = await resolveParentCategoryId(formData.get("parentId"));
 
@@ -524,6 +530,8 @@ export async function updateCategory(id: number, formData: FormData) {
       banner: banner?.trim() || null,
       featuredBanner: featuredBanner?.trim() || null,
       circleImage: circleImage?.trim() || null,
+      circleColor: circleColor?.trim() || null,
+      backgroundColor: backgroundColor?.trim() || null,
       isFeatured,
       parentId,
     };
@@ -558,6 +566,8 @@ export async function updateCategory(id: number, formData: FormData) {
           "banner" = ${updateData.banner}, 
           "featuredBanner" = ${updateData.featuredBanner}, 
           "circleImage" = ${updateData.circleImage}, 
+          "circleColor" = ${updateData.circleColor}, 
+          "backgroundColor" = ${updateData.backgroundColor}, 
           "isFeatured" = ${updateData.isFeatured}, 
           "parentId" = ${updateData.parentId}, 
           "updatedAt" = NOW() 
@@ -571,6 +581,8 @@ export async function updateCategory(id: number, formData: FormData) {
           "banner" = ${updateData.banner}, 
           "featuredBanner" = ${updateData.featuredBanner}, 
           "circleImage" = ${updateData.circleImage}, 
+          "circleColor" = ${updateData.circleColor}, 
+          "backgroundColor" = ${updateData.backgroundColor}, 
           "isFeatured" = ${updateData.isFeatured}, 
           "parentId" = ${updateData.parentId}, 
           "updatedAt" = NOW() 

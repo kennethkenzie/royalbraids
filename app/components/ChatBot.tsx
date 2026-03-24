@@ -176,7 +176,7 @@ export default function ChatBot({
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 left-6 z-50 flex h-16 w-16 items-center justify-center rounded-full bg-black text-white shadow-2xl transition hover:scale-105"
+          className="fixed bottom-6 right-6 z-50 flex h-16 w-16 items-center justify-center rounded-full bg-black text-white shadow-2xl transition hover:scale-105"
           aria-label="Open chat"
         >
           <MessageCircle size={28} />
@@ -184,7 +184,7 @@ export default function ChatBot({
       )}
 
       {isOpen && (
-        <div className="fixed bottom-6 left-6 z-50 w-[370px] overflow-hidden rounded-[22px] border border-[#e8e8e8] bg-white shadow-2xl">
+        <div className="fixed bottom-6 right-6 z-50 w-[370px] overflow-hidden rounded-[22px] border border-[#e8e8e8] bg-white shadow-2xl">
           <div className="flex items-center justify-between bg-black px-4 py-4">
             <div className="flex items-center gap-3">
               <div className="relative">

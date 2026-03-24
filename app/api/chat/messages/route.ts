@@ -60,9 +60,11 @@ export async function POST(request: Request) {
       );
     }
 
+    const replyText = await getChatbotReply(text);
+
     const botReply = await appendMessage(sessionId, {
       sender: "bot",
-      text: getChatbotReply(text),
+      text: replyText,
       channel: whatsappNotification?.success ? "WEB+WHATSAPP" : "WEB",
     });
 

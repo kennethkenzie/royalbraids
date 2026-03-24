@@ -151,7 +151,7 @@ export async function ensureWelcomeMessage(sessionId: string) {
 
   await appendMessage(sessionId, {
     sender: "bot",
-    text: "Hi there! Welcome to Royal Braids. How can I help you today?",
+    text: "Hi there! Welcome to Royal Braids. Ask me about products, prices, order tracking, delivery, returns, or contact details.",
   });
 
   return listMessages(sessionId);

@@ -5,10 +5,12 @@ import { ImagePlus, Upload, X } from "lucide-react";
 
 type CategoryCircleImageFieldProps = {
   defaultValue?: string;
+  previewColor?: string;
 };
 
 export default function CategoryCircleImageField({
   defaultValue = "",
+  previewColor = "#944a95",
 }: CategoryCircleImageFieldProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [imageUrl, setImageUrl] = useState(defaultValue);
@@ -176,7 +178,10 @@ export default function CategoryCircleImageField({
             </div>
           ) : (
             <div className="flex items-center justify-center p-4 bg-zinc-50">
-              <div className="h-[150px] w-[150px] overflow-hidden rounded-full bg-[#944a95] flex items-end justify-center">
+              <div
+                className="flex h-[150px] w-[150px] items-end justify-center overflow-hidden rounded-full"
+                style={{ backgroundColor: previewColor }}
+              >
                 <img
                   key={previewUrl}
                   src={previewUrl}

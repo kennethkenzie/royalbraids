@@ -1,5 +1,6 @@
 import FentyHeader from "../components/FentyHeader";
 import RoyalBridalsFooter from "../components/RoyalBridalsFooter";
+import ChatBot from "../components/ChatBot";
 import prisma from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -37,6 +38,10 @@ export default async function PublicLayout({
         settings={settings} 
       />
       {children}
+      <ChatBot
+        logoUrl={settings?.logoUrl}
+        phoneNumber={settings?.contactPhone}
+      />
       <RoyalBridalsFooter />
     </>
   );
