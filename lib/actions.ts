@@ -883,6 +883,8 @@ export async function updateOrderStatus(orderId: number, status: string) {
     await prisma.$executeRawUnsafe(`
       UPDATE "Order" SET "status" = $1, "updatedAt" = NOW() WHERE "id" = $2
     `, status, orderId);
+    revalidatePath("/dashboard/orders");
+    revalidatePath("/track-order");
     return { success: true };
   } catch (err: any) {
     return { success: false, error: err.message };

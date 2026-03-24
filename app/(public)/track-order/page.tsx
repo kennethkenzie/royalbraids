@@ -12,8 +12,9 @@ import {
   Clock, 
   ShoppingBag, 
   Loader2,
-  ChevronRight,
-  Phone
+  Phone,
+  Sparkles,
+  ArrowRight
 } from "lucide-react";
 import Link from "next/link";
 
@@ -68,22 +69,72 @@ function TrackOrderContent() {
   const currentStepIndex = order ? steps.findIndex(s => s.status === order.status) : 0;
 
   return (
-    <div className="mx-auto max-w-[900px] px-6 py-12 md:py-24">
+    <div className="min-h-screen bg-[#f6f3ee] px-4 py-8 text-black sm:px-6 sm:py-12 md:py-16">
+      <div className="mx-auto max-w-[980px]">
       {isSuccess && !error && order && (
-        <div className="mb-12 rounded-3xl bg-emerald-50 p-8 text-center ring-1 ring-emerald-100 animate-in fade-in zoom-in duration-500">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
-            <CheckCircle2 size={32} />
+        <div className="mb-10 overflow-hidden rounded-[32px] border border-emerald-100 bg-[linear-gradient(135deg,#ecfff4_0%,#ffffff_48%,#f6f3ee_100%)] shadow-[0_30px_70px_rgba(16,24,40,0.08)] animate-in fade-in zoom-in duration-500">
+          <div className="grid gap-6 px-6 py-7 sm:px-8 sm:py-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
+            <div>
+              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-white/80 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.22em] text-emerald-700">
+                <Sparkles className="h-4 w-4" />
+                Order Confirmed
+              </div>
+              <h1 className="text-[28px] font-black uppercase tracking-tight text-emerald-950 sm:text-[34px]">
+                Order Placed Successfully
+              </h1>
+              <p className="mt-3 max-w-[540px] text-[15px] leading-7 text-emerald-900/75">
+                Thank you, {order.customerName}. Your order{" "}
+                <span className="font-bold">{order.orderNumber}</span> has been received and is now being prepared.
+              </p>
+
+              <div className="mt-6 flex flex-wrap gap-3">
+                <div className="rounded-2xl border border-emerald-100 bg-white px-4 py-3">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-400">
+                    Status
+                  </p>
+                  <p className="mt-1 text-[16px] font-bold text-black">{order.status}</p>
+                </div>
+                <div className="rounded-2xl border border-emerald-100 bg-white px-4 py-3">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-400">
+                    Total
+                  </p>
+                  <p className="mt-1 text-[16px] font-bold text-black">
+                    UGX {order.totalCents?.toLocaleString()}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-[28px] border border-black/5 bg-black p-6 text-white shadow-xl">
+              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-white/10 text-white">
+                <CheckCircle2 size={30} />
+              </div>
+              <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-white/45">
+                Next Step
+              </p>
+              <p className="mt-2 text-[20px] font-bold uppercase tracking-tight">
+                Track This Order Anytime
+              </p>
+              <p className="mt-3 text-[14px] leading-6 text-white/70">
+                Keep your order number ready. You can return here at any time to view the delivery status.
+              </p>
+              <a
+                href={`#track-order-search`}
+                className="mt-5 inline-flex items-center gap-2 text-[13px] font-bold uppercase tracking-[0.18em] text-white"
+              >
+                View tracking section
+                <ArrowRight className="h-4 w-4" />
+              </a>
+            </div>
           </div>
-          <h1 className="text-[24px] font-black text-emerald-900 uppercase tracking-tight">Order Placed Successfully!</h1>
-          <p className="mt-2 text-emerald-700">Thank you, {order.customerName}. Your order <span className="font-bold underline">#{order.orderNumber}</span> is being processed.</p>
         </div>
       )}
 
-      <div className="mb-12">
+      <div className="mb-8 rounded-[32px] border border-black/5 bg-white px-6 py-7 shadow-[0_25px_70px_rgba(15,23,42,0.06)] sm:px-8 sm:py-8">
         <h1 className="text-[32px] font-black text-black uppercase tracking-tight leading-none">Track Your Order</h1>
         <p className="mt-3 text-zinc-500">Enter your order number to see the current status of your delivery.</p>
         
-        <form onSubmit={handleSearch} className="mt-8 flex gap-3">
+        <form onSubmit={handleSearch} className="mt-8 flex flex-col gap-3 sm:flex-row" id="track-order-search">
           <div className="relative flex-1">
             <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-zinc-400" />
             <input
@@ -114,7 +165,7 @@ function TrackOrderContent() {
       {order && (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
           {/* Status Tracker */}
-          <div className="rounded-3xl border border-zinc-100 bg-white p-8 shadow-sm">
+          <div className="rounded-[32px] border border-zinc-100 bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.05)] sm:p-8">
             <div className="mb-10 flex flex-wrap items-center justify-between gap-4">
               <div>
                 <span className="text-[12px] font-bold uppercase tracking-[0.2em] text-zinc-400">Order Status</span>
@@ -164,7 +215,7 @@ function TrackOrderContent() {
 
           <div className="grid gap-8 md:grid-cols-2">
             {/* Delivery Details */}
-            <div className="rounded-3xl border border-zinc-100 bg-white p-8 shadow-sm">
+            <div className="rounded-[32px] border border-zinc-100 bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.05)] sm:p-8">
               <h4 className="mb-6 flex items-center gap-2 text-[16px] font-bold text-black uppercase tracking-tight">
                 <MapPin className="h-4 w-4" />
                 Delivery Details
@@ -189,7 +240,7 @@ function TrackOrderContent() {
             </div>
 
             {/* Order Items */}
-            <div className="rounded-3xl border border-zinc-100 bg-white p-8 shadow-sm">
+            <div className="rounded-[32px] border border-zinc-100 bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.05)] sm:p-8">
               <h4 className="mb-6 flex items-center gap-2 text-[16px] font-bold text-black uppercase tracking-tight">
                 <ShoppingBag className="h-4 w-4" />
                 Items Ordered
@@ -215,6 +266,7 @@ function TrackOrderContent() {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }
