@@ -176,7 +176,7 @@ export default function ChatBot({
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 z-50 flex h-16 w-16 items-center justify-center rounded-full bg-black text-white shadow-2xl transition hover:scale-105"
+          className="fixed bottom-4 right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-black text-white shadow-2xl transition hover:scale-105 sm:bottom-6 sm:right-6 sm:h-16 sm:w-16"
           aria-label="Open chat"
         >
           <MessageCircle size={28} />
@@ -184,11 +184,11 @@ export default function ChatBot({
       )}
 
       {isOpen && (
-        <div className="fixed bottom-6 right-6 z-50 w-[370px] overflow-hidden rounded-[22px] border border-[#e8e8e8] bg-white shadow-2xl">
-          <div className="flex items-center justify-between bg-black px-4 py-4">
+        <div className="fixed bottom-4 right-4 z-50 w-[calc(100vw-1.5rem)] max-w-[320px] overflow-hidden rounded-[20px] border border-[#e8e8e8] bg-white shadow-2xl sm:bottom-6 sm:right-6 sm:w-[370px] sm:max-w-none sm:rounded-[22px]">
+          <div className="flex items-center justify-between bg-black px-3 py-3 sm:px-4 sm:py-4">
             <div className="flex items-center gap-3">
               <div className="relative">
-                <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border border-[#b88a2d] bg-[#111]">
+                <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-[#b88a2d] bg-[#111] sm:h-12 sm:w-12">
                   <img
                     src={logoUrl || "/royal-braids-logo.png"}
                     alt="Royal Braids Logo"
@@ -199,10 +199,10 @@ export default function ChatBot({
               </div>
 
               <div>
-                <h3 className="text-base font-semibold text-white">
+                <h3 className="text-sm font-semibold text-white sm:text-base">
                   Royal Assistant
                 </h3>
-                <p className="text-sm font-semibold uppercase tracking-wide text-[#00d26a]">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-[#00d26a] sm:text-sm">
                   Online Now
                 </p>
               </div>
@@ -217,10 +217,10 @@ export default function ChatBot({
             </button>
           </div>
 
-          <div className="bg-[#f6f6f6] px-5 py-5">
+          <div className="bg-[#f6f6f6] px-3 py-3 sm:px-5 sm:py-5">
             <div
               ref={scrollRef}
-              className="h-[310px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-gray-300"
+              className="h-[250px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-gray-300 sm:h-[310px]"
             >
               <div className="space-y-4">
                 {messages.map((message) => (
@@ -231,7 +231,7 @@ export default function ChatBot({
                     }`}
                   >
                     <div
-                      className={`max-w-[255px] rounded-[18px] px-4 py-3 shadow-sm ${
+                      className={`max-w-[220px] rounded-[18px] px-3 py-2.5 shadow-sm sm:max-w-[255px] sm:px-4 sm:py-3 ${
                         message.sender === "user"
                           ? "bg-black text-white"
                           : message.sender === "agent"
@@ -239,9 +239,9 @@ export default function ChatBot({
                             : "border border-[#e4e4e4] bg-white text-[#333]"
                       }`}
                     >
-                      <p className="text-[15px] leading-6">{message.text}</p>
+                      <p className="text-[13px] leading-5 sm:text-[15px] sm:leading-6">{message.text}</p>
                       <span
-                        className={`mt-2 block text-[11px] ${
+                        className={`mt-1.5 block text-[10px] sm:mt-2 sm:text-[11px] ${
                           message.sender === "user"
                             ? "text-white/70"
                             : message.sender === "agent"
@@ -268,7 +268,7 @@ export default function ChatBot({
             <div className="mt-5 flex flex-wrap gap-3">
               <button
                 onClick={() => handleQuickReply("Track My Order")}
-                className="flex items-center gap-2 rounded-full border border-[#dbdbdb] bg-white px-4 py-3 text-[14px] font-medium text-[#444] transition hover:bg-[#f2f2f2]"
+                className="flex items-center gap-2 rounded-full border border-[#dbdbdb] bg-white px-3 py-2.5 text-[12px] font-medium text-[#444] transition hover:bg-[#f2f2f2] sm:px-4 sm:py-3 sm:text-[14px]"
               >
                 <Package size={16} />
                 Track My Order
@@ -276,14 +276,14 @@ export default function ChatBot({
 
               <button
                 onClick={() => handleQuickReply("Returns & Exchanges")}
-                className="flex items-center gap-2 rounded-full border border-[#dbdbdb] bg-white px-4 py-3 text-[14px] font-medium text-[#444] transition hover:bg-[#f2f2f2]"
+                className="flex items-center gap-2 rounded-full border border-[#dbdbdb] bg-white px-3 py-2.5 text-[12px] font-medium text-[#444] transition hover:bg-[#f2f2f2] sm:px-4 sm:py-3 sm:text-[14px]"
               >
                 <RotateCcw size={16} />
                 Returns & Exchanges
               </button>
             </div>
 
-            <div className="mt-5 rounded-full border border-[#dfdfdf] bg-white px-4 py-2">
+            <div className="mt-4 rounded-full border border-[#dfdfdf] bg-white px-3 py-1.5 sm:mt-5 sm:px-4 sm:py-2">
               <div className="flex items-center gap-3">
                 <input
                   type="text"
@@ -291,12 +291,12 @@ export default function ChatBot({
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSend()}
-                  className="h-10 flex-1 bg-transparent text-[14px] text-[#333] outline-none placeholder:text-[#c8c8c8]"
+                  className="h-9 flex-1 bg-transparent text-[13px] text-[#333] outline-none placeholder:text-[#c8c8c8] sm:h-10 sm:text-[14px]"
                 />
 
                 <button
                   onClick={handleSend}
-                  className="flex h-11 w-11 items-center justify-center rounded-full bg-[#ededed] text-[#9a9a9a] transition hover:bg-black hover:text-white"
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-[#ededed] text-[#9a9a9a] transition hover:bg-black hover:text-white sm:h-11 sm:w-11"
                   aria-label="Send message"
                 >
                   <Send size={18} />
@@ -308,13 +308,13 @@ export default function ChatBot({
               href={whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-[#25D366] px-4 py-3 text-sm font-semibold text-white transition hover:opacity-90"
+              className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-[#25D366] px-4 py-2.5 text-[13px] font-semibold text-white transition hover:opacity-90 sm:py-3 sm:text-sm"
             >
               <MessageSquareMore size={18} />
               Continue on WhatsApp
             </a>
 
-            <p className="mt-4 text-center text-[11px] font-semibold uppercase tracking-[1.4px] text-[#c6c6c6]">
+            <p className="mt-3 text-center text-[10px] font-semibold uppercase tracking-[1.2px] text-[#c6c6c6] sm:mt-4 sm:text-[11px] sm:tracking-[1.4px]">
               AI Assistant Powered by Royal Braids
             </p>
           </div>
