@@ -26,7 +26,7 @@ export default function ChatBot({
   logoUrl?: string;
   phoneNumber?: string;
 }) {
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -184,54 +184,38 @@ export default function ChatBot({
       )}
 
       {isOpen && (
-        <div className="fixed bottom-4 right-4 z-50 w-[calc(100vw-1.5rem)] max-w-[320px] overflow-hidden rounded-[20px] border border-[#e8e8e8] bg-white shadow-2xl sm:bottom-6 sm:right-6 sm:w-[370px] sm:max-w-none sm:rounded-[22px]">
-          <div className="flex items-center justify-between bg-black px-3 py-3 sm:px-4 sm:py-4">
-            <div className="flex items-center gap-3">
+        <div className="fixed bottom-3 right-3 z-50 w-[calc(100vw-1.5rem)] max-w-[300px] overflow-hidden rounded-2xl border border-[#e8e8e8] bg-white shadow-2xl sm:bottom-6 sm:right-6 sm:max-w-[370px] sm:rounded-[22px]">
+          {/* Header */}
+          <div className="flex items-center justify-between bg-black px-3 py-2.5 sm:px-4 sm:py-4">
+            <div className="flex items-center gap-2 sm:gap-3">
               <div className="relative">
-                <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-[#b88a2d] bg-[#111] sm:h-12 sm:w-12">
+                <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full border border-[#b88a2d] bg-[#111] sm:h-12 sm:w-12">
                   <img
                     src={logoUrl || "/royal-braids-logo.png"}
                     alt="Royal Braids Logo"
                     className="h-full w-full object-cover"
                   />
                 </div>
-                <span className="absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-black bg-[#00d26a]" />
+                <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-black bg-[#00d26a] sm:h-3.5 sm:w-3.5" />
               </div>
-
               <div>
-                <h3 className="text-sm font-semibold text-white sm:text-base">
-                  Royal Assistant
-                </h3>
-                <p className="text-[11px] font-semibold uppercase tracking-wide text-[#00d26a] sm:text-sm">
-                  Online Now
-                </p>
+                <h3 className="text-[13px] font-semibold text-white sm:text-base">Royal Assistant</h3>
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-[#00d26a] sm:text-[11px]">Online Now</p>
               </div>
             </div>
-
-            <button
-              onClick={() => setIsOpen(false)}
-              className="text-white transition hover:opacity-80"
-              aria-label="Close chat"
-            >
-              <X size={22} />
+            <button onClick={() => setIsOpen(false)} className="text-white transition hover:opacity-80" aria-label="Close chat">
+              <X size={18} />
             </button>
           </div>
 
+          {/* Body */}
           <div className="bg-[#f6f6f6] px-3 py-3 sm:px-5 sm:py-5">
-            <div
-              ref={scrollRef}
-              className="h-[250px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-gray-300 sm:h-[310px]"
-            >
-              <div className="space-y-4">
+            <div ref={scrollRef} className="h-[180px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-gray-300 sm:h-[310px]">
+              <div className="space-y-3">
                 {messages.map((message) => (
-                  <div
-                    key={message.id}
-                    className={`flex ${
-                      message.sender === "user" ? "justify-end" : "justify-start"
-                    }`}
-                  >
+                  <div key={message.id} className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"}`}>
                     <div
-                      className={`max-w-[220px] rounded-[18px] px-3 py-2.5 shadow-sm sm:max-w-[255px] sm:px-4 sm:py-3 ${
+                      className={`max-w-[200px] rounded-[14px] px-3 py-2 shadow-sm sm:max-w-[255px] sm:rounded-[18px] sm:px-4 sm:py-3 ${
                         message.sender === "user"
                           ? "bg-black text-white"
                           : message.sender === "agent"
@@ -239,82 +223,78 @@ export default function ChatBot({
                             : "border border-[#e4e4e4] bg-white text-[#333]"
                       }`}
                     >
-                      <p className="text-[13px] leading-5 sm:text-[15px] sm:leading-6">{message.text}</p>
-                      <span
-                        className={`mt-1.5 block text-[10px] sm:mt-2 sm:text-[11px] ${
-                          message.sender === "user"
-                            ? "text-white/70"
-                            : message.sender === "agent"
-                              ? "text-[#5a8b68]"
-                              : "text-[#999]"
-                        }`}
-                      >
+                      <p className="text-[12px] leading-[18px] sm:text-[15px] sm:leading-6">{message.text}</p>
+                      <span className={`mt-1 block text-[10px] sm:mt-2 ${message.sender === "user" ? "text-white/70" : message.sender === "agent" ? "text-[#5a8b68]" : "text-[#999]"}`}>
                         {message.time}
                       </span>
                     </div>
                   </div>
                 ))}
-
                 {isTyping && (
                   <div className="flex justify-start">
-                    <div className="rounded-[18px] border border-[#e4e4e4] bg-white px-4 py-3 shadow-sm">
-                      <p className="text-sm text-[#777]">Typing...</p>
+                    <div className="rounded-[14px] border border-[#e4e4e4] bg-white px-3 py-2 shadow-sm">
+                      <p className="text-[12px] text-[#777]">Typing...</p>
                     </div>
                   </div>
                 )}
               </div>
             </div>
 
-            <div className="mt-5 flex flex-wrap gap-3">
+            {/* Quick replies */}
+            <div className="mt-3 flex flex-wrap gap-2 sm:mt-5 sm:gap-3">
               <button
                 onClick={() => handleQuickReply("Track My Order")}
-                className="flex items-center gap-2 rounded-full border border-[#dbdbdb] bg-white px-3 py-2.5 text-[12px] font-medium text-[#444] transition hover:bg-[#f2f2f2] sm:px-4 sm:py-3 sm:text-[14px]"
+                className="flex items-center gap-1.5 rounded-full border border-[#dbdbdb] bg-white px-2.5 py-1.5 text-[11px] font-medium text-[#444] transition hover:bg-[#f2f2f2] sm:gap-2 sm:px-4 sm:py-3 sm:text-[14px]"
               >
-                <Package size={16} />
-                Track My Order
+                <Package size={13} className="sm:hidden" />
+                <Package size={16} className="hidden sm:block" />
+                Track Order
               </button>
-
               <button
                 onClick={() => handleQuickReply("Returns & Exchanges")}
-                className="flex items-center gap-2 rounded-full border border-[#dbdbdb] bg-white px-3 py-2.5 text-[12px] font-medium text-[#444] transition hover:bg-[#f2f2f2] sm:px-4 sm:py-3 sm:text-[14px]"
+                className="flex items-center gap-1.5 rounded-full border border-[#dbdbdb] bg-white px-2.5 py-1.5 text-[11px] font-medium text-[#444] transition hover:bg-[#f2f2f2] sm:gap-2 sm:px-4 sm:py-3 sm:text-[14px]"
               >
-                <RotateCcw size={16} />
-                Returns & Exchanges
+                <RotateCcw size={13} className="sm:hidden" />
+                <RotateCcw size={16} className="hidden sm:block" />
+                Returns
               </button>
             </div>
 
-            <div className="mt-4 rounded-full border border-[#dfdfdf] bg-white px-3 py-1.5 sm:mt-5 sm:px-4 sm:py-2">
-              <div className="flex items-center gap-3">
+            {/* Input */}
+            <div className="mt-2.5 rounded-full border border-[#dfdfdf] bg-white px-3 py-1 sm:mt-5 sm:px-4 sm:py-2">
+              <div className="flex items-center gap-2">
                 <input
                   type="text"
-                  placeholder="Type your message..."
+                  placeholder="Type a message..."
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSend()}
-                  className="h-9 flex-1 bg-transparent text-[13px] text-[#333] outline-none placeholder:text-[#c8c8c8] sm:h-10 sm:text-[14px]"
+                  className="h-8 flex-1 bg-transparent text-[12px] text-[#333] outline-none placeholder:text-[#c8c8c8] sm:h-10 sm:text-[14px]"
                 />
-
                 <button
                   onClick={handleSend}
-                  className="flex h-9 w-9 items-center justify-center rounded-full bg-[#ededed] text-[#9a9a9a] transition hover:bg-black hover:text-white sm:h-11 sm:w-11"
+                  className="flex h-7 w-7 items-center justify-center rounded-full bg-[#ededed] text-[#9a9a9a] transition hover:bg-black hover:text-white sm:h-11 sm:w-11"
                   aria-label="Send message"
                 >
-                  <Send size={18} />
+                  <Send size={14} className="sm:hidden" />
+                  <Send size={18} className="hidden sm:block" />
                 </button>
               </div>
             </div>
 
+            {/* WhatsApp */}
             <a
               href={whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-[#25D366] px-4 py-2.5 text-[13px] font-semibold text-white transition hover:opacity-90 sm:py-3 sm:text-sm"
+              className="mt-2.5 flex w-full items-center justify-center gap-2 rounded-full bg-[#25D366] px-4 py-2 text-[12px] font-semibold text-white transition hover:opacity-90 sm:mt-4 sm:py-3 sm:text-sm"
             >
-              <MessageSquareMore size={18} />
+              <MessageSquareMore size={15} className="sm:hidden" />
+              <MessageSquareMore size={18} className="hidden sm:block" />
               Continue on WhatsApp
             </a>
 
-            <p className="mt-3 text-center text-[10px] font-semibold uppercase tracking-[1.2px] text-[#c6c6c6] sm:mt-4 sm:text-[11px] sm:tracking-[1.4px]">
+            <p className="mt-2 text-center text-[9px] font-semibold uppercase tracking-[1px] text-[#c6c6c6] sm:mt-4 sm:text-[11px] sm:tracking-[1.4px]">
               AI Assistant Powered by Royal Braids
             </p>
           </div>

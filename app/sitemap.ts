@@ -40,12 +40,38 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "monthly",
       priority: 0.6,
     },
-    ...categories.map((category) => ({
-      url: absoluteUrl(`/products?category=${encodeURIComponent(category.slug)}`),
-      lastModified: category.updatedAt,
-      changeFrequency: "weekly" as const,
-      priority: 0.7,
-    })),
+    ...categories.map((category) => {
+      const specialCategories = [
+        "crown-closures",
+        "lace-part-closures",
+        "4x4-lace-closures",
+        "5x5-lace-closures",
+        "2x6-lace-closures",
+        "13x4-lace-closures",
+        "360-lace-closures",
+        "human-hair-weaves",
+        "human-hair-blend-weaves",
+        "unprocessed-hair-weave-bundles",
+        "remy-hair-weaves",
+        "weave-care-products",
+        "weave-accessories",
+        "synthetic-hair-weaves",
+        "organique-weaves",
+        "clip-in-weaves"
+      ];
+      
+      const isSpecial = specialCategories.includes(category.slug);
+      const url = isSpecial 
+        ? absoluteUrl(`/${category.slug}`)
+        : absoluteUrl(`/products?category=${encodeURIComponent(category.slug)}`);
+
+      return {
+        url,
+        lastModified: category.updatedAt,
+        changeFrequency: "weekly" as const,
+        priority: 0.7,
+      };
+    }),
     ...products.map((product) => ({
       url: absoluteUrl(`/products/${product.slug}`),
       lastModified: product.updatedAt,
