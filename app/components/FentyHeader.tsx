@@ -72,16 +72,21 @@ export default function FentyHeader({
     "Book bulk orders for salons and resellers",
   ];
 
-  const activeNavLinks = navLinks.length > 0 ? navLinks : [
-    { name: "Closure", href: "/products?category=closure" },
+  const fallbackNavLinks = [
     { name: "Crochet Braid", href: "/products?category=crochet-braid" },
-    { name: "Weaves", href: "/products?category=weaves" },
     { name: "Braids", href: "/products?category=braids" },
+    { name: "Curls", href: "/products?category=curls" },
     { name: "About Us", href: "/about" },
     { name: "Blog", href: "/blog" },
     { name: "Contact Us", href: "/contact" },
     { name: "Help", href: "/help" },
   ];
+
+  const hiddenNavNames = new Set(["weaves", "closure"]);
+
+  const activeNavLinks = (
+    navLinks.length > 0 ? navLinks : fallbackNavLinks
+  ).filter((item) => !hiddenNavNames.has(item.name.trim().toLowerCase()));
 
   return (
     <header className="w-full bg-black">
