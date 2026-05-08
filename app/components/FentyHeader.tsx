@@ -1,6 +1,7 @@
 "use client";
 
 import { Heart, ShoppingBag, User, Search, Menu, X } from "lucide-react";
+import AnimatedThemeToggler from "@/components/ui/animated-theme-toggler";
 import { useState } from "react";
 import { cloudinaryImages } from "@/lib/cloudinary";
 import { useCart } from "@/app/context/CartContext";
@@ -151,6 +152,7 @@ export default function FentyHeader({
 
           {/* Right icons */}
           <div className="flex min-w-[60px] items-center justify-end gap-2 text-sm text-black md:min-w-[180px] md:gap-4">
+            <AnimatedThemeToggler />
             <Link href="/signin" className="flex items-center gap-1 transition-colors hover:opacity-70 text-black">
               <User className="h-[17px] w-[17px] stroke-[1.6] md:h-4 md:w-4" />
               <span className="hidden md:inline">Sign In</span>
