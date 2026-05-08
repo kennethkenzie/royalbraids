@@ -2,6 +2,7 @@
 
 import { useMemo, useRef, useState } from "react";
 import { ImagePlus, Upload, X } from "lucide-react";
+import { compressImage } from "@/lib/image-compress";
 
 type CategoryCircleImageFieldProps = {
   defaultValue?: string;
@@ -43,18 +44,19 @@ export default function CategoryCircleImageField({
       return;
     }
 
-    if (file.size > 5 * 1024 * 1024) {
-      setError("Image must be 5MB or smaller.");
-      event.target.value = "";
-      return;
-    }
-
     setIsUploading(true);
     setError("");
 
+    let uploadFile = file;
+    try {
+      uploadFile = await compressImage(file, { maxBytes: 5 * 1024 * 1024 });
+    } catch {
+      // fall back to original file if compression fails
+    }
+
     try {
       const payload = new FormData();
-      payload.append("file", file);
+      payload.append("file", uploadFile);
       payload.append("upload_preset", uploadPreset);
 
       const response = await fetch(
@@ -115,7 +117,7 @@ export default function CategoryCircleImageField({
               </>
             )}
           </button>
-          <p className="mt-1 text-[11px] text-zinc-400">PNG, JPG, WEBP up to 5MB</p>
+          <p className="mt-1 text-[11px] text-zinc-400">PNG, JPG, WEBP — large images are auto-compressed.</p>
         </div>
       </div>
 

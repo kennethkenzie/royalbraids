@@ -2,6 +2,7 @@
 
 import { useMemo, useRef, useState } from "react";
 import { ImagePlus, Upload, X } from "lucide-react";
+import { compressImage } from "@/lib/image-compress";
 
 type BlogCoverImageFieldProps = {
   defaultValue?: string;
@@ -40,18 +41,19 @@ export default function BlogCoverImageField({
       event.target.value = "";
       return;
     }
-    if (file.size > 8 * 1024 * 1024) {
-      setError("Image must be 8MB or smaller.");
-      event.target.value = "";
-      return;
-    }
-
     setIsUploading(true);
     setError("");
 
+    let uploadFile = file;
+    try {
+      uploadFile = await compressImage(file, { maxBytes: 8 * 1024 * 1024 });
+    } catch {
+      // fall back to original file if compression fails
+    }
+
     try {
       const payload = new FormData();
-      payload.append("file", file);
+      payload.append("file", uploadFile);
       payload.append("upload_preset", uploadPreset);
       const response = await fetch(
         `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
@@ -116,7 +118,7 @@ export default function BlogCoverImageField({
           </button>
         </div>
         <p className="mt-1 text-[11px] text-zinc-400">
-          PNG, JPG or WEBP up to 8MB. Recommended: 1600 × 900.
+          PNG, JPG or WEBP — large images are auto-compressed. Recommended: 1600 × 900.
         </p>
       </div>
 
