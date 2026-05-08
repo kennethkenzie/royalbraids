@@ -79,6 +79,9 @@ export default function RoyalBridalsFooter() {
             <Link href="/help" className="block hover:text-white/70">
               Help & FAQs
             </Link>
+            <Link href="/blog" className="block hover:text-white/70">
+              Blog
+            </Link>
             <a href="#" className="block hover:text-white/70">
               My Account
             </a>

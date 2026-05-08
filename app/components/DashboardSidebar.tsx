@@ -61,6 +61,7 @@ const navItems = [
       { name: "Hero Carousel", href: "/dashboard/content/hero", icon: ImageIcon },
       { name: "Product Reels", href: "/dashboard/content/reels", icon: Film },
       { name: "Featured Sections", href: "/dashboard/content/featured", icon: Layout },
+      { name: "Blog Posts", href: "/dashboard/content/blog", icon: FileText },
       { name: "Category Banners", href: "/dashboard/products/category", icon: Tag },
       { name: "Header & Navbar", href: "/dashboard/content/navbar", icon: Layout },
       { name: "Privacy Policy", href: "/dashboard/content/privacy", icon: ShieldCheck },

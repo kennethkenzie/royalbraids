@@ -198,6 +198,22 @@ model CustomerConversation {
   latestMessageAt DateTime          @default(now())
 }
 
+model BlogPost {
+  id          Int       @id @default(autoincrement())
+  title       String
+  slug        String    @unique
+  excerpt     String?
+  coverImage  String?
+  body        String
+  author      String?
+  isPublished Boolean   @default(false)
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([isPublished, publishedAt])
+}
+
 model CustomerMessage {
   id                Int                  @id @default(autoincrement())
   conversationId    Int
