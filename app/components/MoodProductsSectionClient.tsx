@@ -37,13 +37,13 @@ function ProductCard({ product }: { product: MoodProduct }) {
             <img
               src={product.image}
               alt={product.name}
-              className={`block h-[480px] w-full object-cover object-top transition-all duration-700 group-hover:scale-[1.05] ${product.hoverImage ? 'group-hover:opacity-0' : 'opacity-100'}`}
+              className={`block h-[480px] w-full object-contain transition-all duration-700 group-hover:scale-[1.05] ${product.hoverImage ? 'group-hover:opacity-0' : 'opacity-100'}`}
             />
             {product.hoverImage && (
               <img
                 src={product.hoverImage}
                 alt={`${product.name} hover`}
-                className="absolute inset-0 block h-[480px] w-full object-cover object-top transition-all duration-700 opacity-0 group-hover:opacity-100 group-hover:scale-[1.05]"
+                className="absolute inset-0 block h-[480px] w-full object-contain transition-all duration-700 opacity-0 group-hover:opacity-100 group-hover:scale-[1.05]"
               />
             )}
           </>

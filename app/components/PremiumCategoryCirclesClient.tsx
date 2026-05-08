@@ -70,7 +70,7 @@ export default function PremiumCategoryCirclesClient({
                   />
 
                   {/* circle frame */}
-                  <div className="relative flex h-[320px] w-[320px] items-end justify-center overflow-hidden rounded-full border border-white/10 bg-[#9c53a4] shadow-[0_20px_60px_rgba(0,0,0,0.45)] transition duration-500 group-hover:scale-[1.04] group-hover:shadow-[0_28px_90px_rgba(181,101,192,0.28)] md:h-[380px] md:w-[380px] xl:h-[400px] xl:w-[400px]">
+                  <div className="relative flex h-[320px] w-[320px] items-center justify-center overflow-hidden rounded-full border border-white/10 bg-[#9c53a4] shadow-[0_20px_60px_rgba(0,0,0,0.45)] transition duration-500 group-hover:scale-[1.04] group-hover:shadow-[0_28px_90px_rgba(181,101,192,0.28)] md:h-[380px] md:w-[380px] xl:h-[400px] xl:w-[400px]">
                     {/* subtle top sheen */}
                     <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_18%,rgba(255,255,255,0.14),transparent_42%)]" />
 
@@ -81,7 +81,7 @@ export default function PremiumCategoryCirclesClient({
                     <motion.img
                       src={category.circleImage}
                       alt={category.name}
-                      className="relative z-10 h-[118%] w-auto max-w-none object-contain drop-shadow-[0_18px_30px_rgba(0,0,0,0.42)] transition duration-500 group-hover:scale-[1.045]"
+                      className="relative z-10 h-full w-full scale-110 object-contain drop-shadow-[0_18px_30px_rgba(0,0,0,0.42)] transition duration-500 group-hover:scale-[1.16]"
                       whileHover={{ y: -6 }}
                       transition={{ type: "spring", stiffness: 140, damping: 14 }}
                     />

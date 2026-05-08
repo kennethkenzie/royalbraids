@@ -152,14 +152,14 @@ export default function CategoryCircleImageField({
           ) : (
             <div className="flex items-center justify-center p-4 bg-zinc-50">
               <div
-                className="flex h-[150px] w-[150px] items-end justify-center overflow-hidden rounded-full"
+                className="flex h-[150px] w-[150px] items-center justify-center overflow-hidden rounded-full"
                 style={{ backgroundColor: previewColor }}
               >
                 <img
                   key={previewUrl}
                   src={previewUrl}
                   alt="Category circle preview"
-                  className="h-[120%] w-auto object-contain"
+                  className="h-full w-full scale-110 object-contain"
                   onError={() => {
                     setPreviewError("Image preview could not be loaded. Check the image URL.");
                   }}

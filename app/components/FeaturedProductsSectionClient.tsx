@@ -35,13 +35,13 @@ function ProductCard({ product }: { product: Product }) {
             <img
               src={product.image}
               alt={product.name}
-              className={`absolute inset-0 h-full w-full object-cover transition-transform duration-1000 group-hover:scale-105 ${product.hoverImage ? 'group-hover:opacity-0' : 'opacity-100'}`}
+              className={`absolute inset-0 h-full w-full object-contain transition-transform duration-1000 group-hover:scale-105 ${product.hoverImage ? 'group-hover:opacity-0' : 'opacity-100'}`}
             />
             {product.hoverImage && (
               <img
                 src={product.hoverImage}
                 alt={`${product.name} hover`}
-                className="absolute inset-0 h-full w-full object-cover transition-transform duration-1000 opacity-0 group-hover:opacity-100 group-hover:scale-105"
+                className="absolute inset-0 h-full w-full object-contain transition-transform duration-1000 opacity-0 group-hover:opacity-100 group-hover:scale-105"
               />
             )}
           </>

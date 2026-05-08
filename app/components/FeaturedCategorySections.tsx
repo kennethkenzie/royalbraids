@@ -25,7 +25,6 @@ async function getFeaturedCategories() {
 }
 
 import { TextAnimation } from "./ScrollAnimation";
-import RoyalBraidsHero from "./RoyalBraidsHero";
 
 export default async function FeaturedCategorySections() {
   const categories = await getFeaturedCategories();
@@ -90,13 +89,13 @@ export default async function FeaturedCategorySections() {
                               <img
                                 src={product.image}
                                 alt={product.name}
-                                className={`block h-[580px] w-full object-cover object-top transition-all duration-700 group-hover:scale-[1.05] ${(product as any).hoverImage ? 'group-hover:opacity-0' : 'opacity-100'}`}
+                                className={`block h-[580px] w-full bg-[#e8e5e0] object-contain transition-all duration-700 group-hover:scale-[1.05] ${(product as any).hoverImage ? 'group-hover:opacity-0' : 'opacity-100'}`}
                               />
                               {(product as any).hoverImage && (
                                 <img
                                   src={(product as any).hoverImage}
                                   alt={`${product.name} hover`}
-                                  className="absolute inset-0 block h-[580px] w-full object-cover object-top transition-all duration-700 opacity-0 group-hover:opacity-100 group-hover:scale-[1.05]"
+                                  className="absolute inset-0 block h-[580px] w-full bg-[#e8e5e0] object-contain transition-all duration-700 opacity-0 group-hover:opacity-100 group-hover:scale-[1.05]"
                                 />
                               )}
                             </>
@@ -156,17 +155,29 @@ export default async function FeaturedCategorySections() {
             }`}
           >
             {bannerCategories.map((category) => (
-              <div key={category.id} className="w-full overflow-hidden">
-                <RoyalBraidsHero
-                  category={{
-                    name: category.name,
-                    description: (category as any).description,
-                    banner: (category as any).featuredBanner,
-                    circleColor: (category as any).circleColor,
-                    backgroundColor: (category as any).backgroundColor,
-                  }}
-                />
-              </div>
+                <Link
+                  key={category.id}
+                  href={`/products?category=${category.slug}`}
+                  className="group relative block w-full overflow-hidden"
+                >
+                  <img
+                    src={(category as any).featuredBanner}
+                    alt={`${category.name} banner`}
+                    className="block h-[220px] w-full object-contain transition-transform duration-700 group-hover:scale-[1.03] sm:h-[280px] md:h-[340px] lg:h-[400px]"
+                  />
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-black/15 to-transparent" />
+                  <div className="absolute inset-x-0 bottom-0 flex flex-col gap-1 px-6 pb-6 text-white md:px-10 md:pb-10">
+                    <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/70">
+                      Featured Collection
+                    </p>
+                    <h3 className="text-[26px] font-black uppercase leading-tight tracking-tight md:text-[36px]">
+                      {category.name}
+                    </h3>
+                    <span className="mt-2 inline-block w-fit text-[12px] font-bold uppercase tracking-widest underline underline-offset-4 group-hover:opacity-80">
+                      Shop Now →
+                    </span>
+                  </div>
+                </Link>
             ))}
           </div>
         </section>

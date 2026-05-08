@@ -84,7 +84,7 @@ export default async function CategoryCollectionPage({
                       <img
                         src={product.image}
                         alt={product.name}
-                        className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+                        className="h-full w-full object-contain transition-transform duration-700 group-hover:scale-[1.04]"
                       />
                     ) : (
                       <div className="flex h-full items-center justify-center text-[80px] font-black uppercase text-zinc-300">

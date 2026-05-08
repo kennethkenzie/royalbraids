@@ -98,7 +98,7 @@ export default function RecentlyViewed({
                     <img
                       src={item.image}
                       alt={item.title}
-                      className="h-[560px] w-full object-cover"
+                      className="h-[560px] w-full object-contain"
                     />
                   ) : (
                     <div className="flex h-[560px] w-full items-center justify-center text-[64px] font-black text-zinc-300">

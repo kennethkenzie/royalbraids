@@ -41,7 +41,7 @@ function ProductCard({ product }: { product: Product }) {
               src={product.image}
               alt={product.name}
               fill
-              className={`absolute inset-0 h-full w-full object-cover transition-transform duration-1000 group-hover:scale-105 ${product.hoverImage ? "group-hover:opacity-0" : "opacity-100"}`}
+              className={`absolute inset-0 h-full w-full object-contain transition-transform duration-1000 group-hover:scale-105 ${product.hoverImage ? "group-hover:opacity-0" : "opacity-100"}`}
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
             />
             {product.hoverImage && (
@@ -49,7 +49,7 @@ function ProductCard({ product }: { product: Product }) {
                 src={product.hoverImage}
                 alt={`${product.name} hover`}
                 fill
-                className="absolute inset-0 h-full w-full object-cover opacity-0 transition-transform duration-1000 group-hover:scale-105 group-hover:opacity-100"
+                className="absolute inset-0 h-full w-full object-contain opacity-0 transition-transform duration-1000 group-hover:scale-105 group-hover:opacity-100"
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
               />
             )}
