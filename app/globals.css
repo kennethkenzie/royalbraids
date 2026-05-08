@@ -3,6 +3,24 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --primary: #0a0a0a;
+  --primary-foreground: #fafafa;
+  --input: #e4e4e7;
+  --ring: #18181b;
+}
+
+html.dark {
+  --primary: #fafafa;
+  --primary-foreground: #0a0a0a;
+  --input: #3f3f46;
+  --ring: #d4d4d8;
+}
+
+@theme inline {
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
 }
 
 @layer utilities {

@@ -13,6 +13,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createProduct, updateProduct } from "@/lib/actions";
+import { Switch } from "@/components/ui/interfaces-switch";
 
 type ProductColor = {
   id?: number;
@@ -1004,13 +1005,13 @@ export default function ProductEditorForm({
               </div>
 
               <div className="flex items-start gap-3 rounded-xl border border-amber-100 bg-amber-50 px-4 py-4">
-                <input
-                  type="checkbox"
-                  id="isFeaturedProduct"
-                  checked={isFeatured}
-                  onChange={(e) => setIsFeatured(e.target.checked)}
-                  className="mt-0.5 h-4 w-4 rounded border-amber-300 accent-amber-500"
-                />
+                <div className="mt-0.5">
+                  <Switch
+                    id="isFeaturedProduct"
+                    checked={isFeatured}
+                    onCheckedChange={setIsFeatured}
+                  />
+                </div>
                 <div>
                   <label
                     htmlFor="isFeaturedProduct"

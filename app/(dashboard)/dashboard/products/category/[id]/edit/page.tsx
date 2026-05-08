@@ -7,6 +7,7 @@ import CategoryBannerField from "@/app/components/CategoryBannerField";
 import CategoryCircleImageField from "@/app/components/CategoryCircleImageField";
 import CategoryColorField from "@/app/components/CategoryColorField";
 import SaveChangesButton from "@/app/components/SaveChangesButton";
+import FormSwitch from "@/app/components/FormSwitch";
 
 export const dynamic = "force-dynamic";
 
@@ -172,13 +173,13 @@ export default async function EditCategoryPage({
             </div>
 
             <div className="flex items-start gap-3 rounded-xl bg-amber-50 border border-amber-100 px-4 py-4">
-              <input
-                type="checkbox"
-                name="isFeatured"
-                id="isFeatured"
-                defaultChecked={category.isFeatured}
-                className="mt-0.5 h-4 w-4 rounded border-amber-300 accent-amber-500"
-              />
+              <div className="mt-0.5">
+                <FormSwitch
+                  name="isFeatured"
+                  id="isFeatured"
+                  defaultChecked={category.isFeatured}
+                />
+              </div>
               <div>
                 <label htmlFor="isFeatured" className="block text-[14px] font-semibold text-amber-800 cursor-pointer">
                   Feature on Homepage

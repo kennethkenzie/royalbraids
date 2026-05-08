@@ -6,6 +6,7 @@ import { createCategory } from "@/lib/actions";
 import CategoryBannerField from "@/app/components/CategoryBannerField";
 import CategoryCircleImageField from "@/app/components/CategoryCircleImageField";
 import CategoryColorField from "@/app/components/CategoryColorField";
+import FormSwitch from "@/app/components/FormSwitch";
 
 const initialState = {
   success: false,
@@ -99,12 +100,7 @@ export default function CategoryCreateForm({
       </div>
 
       <div className="flex items-center gap-3 rounded-xl border border-amber-100 bg-amber-50 px-4 py-3">
-        <input
-          type="checkbox"
-          name="isFeatured"
-          id="isFeatured"
-          className="h-4 w-4 rounded border-amber-300 accent-amber-500"
-        />
+        <FormSwitch name="isFeatured" id="isFeatured" />
         <div>
           <label
             htmlFor="isFeatured"

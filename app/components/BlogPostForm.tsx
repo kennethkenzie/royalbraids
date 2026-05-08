@@ -1,5 +1,6 @@
 import BlogCoverImageField from "@/app/components/BlogCoverImageField";
 import SaveChangesButton from "@/app/components/SaveChangesButton";
+import FormSwitch from "@/app/components/FormSwitch";
 
 type BlogPostFormProps = {
   action: (formData: FormData) => void | Promise<void>;
@@ -87,12 +88,10 @@ export default function BlogPostForm({
           />
         </div>
         <div className="flex items-center gap-3 rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3">
-          <input
-            type="checkbox"
+          <FormSwitch
             name="isPublished"
             id="isPublished"
             defaultChecked={defaults?.isPublished ?? false}
-            className="h-4 w-4 rounded border-emerald-300 accent-emerald-500"
           />
           <label
             htmlFor="isPublished"
