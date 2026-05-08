@@ -10,7 +10,7 @@ import Link from "next/link";
 interface HeaderProps {
   navLinks?: { name: string; href: string }[];
   promoMessages?: string[];
-  settings?: { logoUrl?: string; ugFlagUrl?: string };
+  settings?: { logoUrl?: string | null; ugFlagUrl?: string | null } | null;
 }
 
 const weavesMegaMenu = {
@@ -57,8 +57,9 @@ const closureDropdownLinks = [
 export default function FentyHeader({ 
   navLinks = [], 
   promoMessages = [],
-  settings = {}
+  settings
 }: HeaderProps) {
+  const headerSettings = settings ?? {};
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isWeavesMegaMenuOpen, setIsWeavesMegaMenuOpen] = useState(false);
   const [isClosureMenuOpen, setIsClosureMenuOpen] = useState(false);
@@ -117,7 +118,7 @@ export default function FentyHeader({
             </button>
             <div className="hidden items-center gap-2 md:flex">
               <img
-                src={settings.ugFlagUrl || cloudinaryImages.ugFlag}
+                src={headerSettings.ugFlagUrl || cloudinaryImages.ugFlag}
                 alt="UG Flag"
                 className="h-3 w-4.5 overflow-hidden rounded-[1px] object-cover"
               />
@@ -130,9 +131,9 @@ export default function FentyHeader({
           {/* Center logo */}
           <div className="flex flex-1 justify-center py-1">
             <Link href="/" className="group flex items-center gap-2 md:gap-4">
-              {settings.logoUrl && (
+              {headerSettings.logoUrl && (
                 <img
-                  src={settings.logoUrl}
+                  src={headerSettings.logoUrl}
                   alt="Royal Braids Logo"
                   className="h-8 w-auto object-contain transition-transform group-hover:scale-105 md:h-14"
                 />

@@ -88,35 +88,8 @@ export default function CategoryCircleImageField({
   return (
     <div className="space-y-4">
       <input type="hidden" name="circleImage" value={imageUrl} />
-      <div className="grid gap-4 md:grid-cols-[1fr_170px]">
+      <div className="grid gap-4">
         <div>
-          <label
-            htmlFor="circleImage"
-            className="mb-2 block text-[13px] font-medium text-zinc-700"
-          >
-            Circle Image URL
-          </label>
-          <input
-            type="url"
-            id="circleImage"
-            value={imageUrl}
-            onChange={(e) => {
-              setImageUrl(e.target.value);
-              setError("");
-              setPreviewError("");
-            }}
-            placeholder="https://res.cloudinary.com/..."
-            className="h-11 w-full rounded-xl border border-transparent bg-zinc-50 px-4 text-[14px] outline-none transition-all focus:border-black/10"
-          />
-          <p className="mt-1 text-[11px] text-zinc-400">
-            Paste a Cloudinary or direct image URL
-          </p>
-        </div>
-
-        <div>
-          <label className="mb-2 block text-[13px] font-medium text-zinc-700">
-            Upload Circle Image
-          </label>
           <input
             ref={fileInputRef}
             type="file"

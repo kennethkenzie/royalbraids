@@ -1,15 +1,18 @@
 import prisma from "@/lib/prisma";
 import HeaderDashboardClient from "@/app/components/HeaderDashboardClient";
 import { Layout } from "lucide-react";
+import { isDatabaseConfigured } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
 export default async function NavbarManagementPage() {
-  const [topbar, nav, settings] = await Promise.all([
-    (prisma as any).topbarMessage.findMany({ orderBy: { order: "asc" } }),
-    (prisma as any).headerNavItem.findMany({ orderBy: { order: "asc" } }),
-    (prisma as any).siteSettings.findUnique({ where: { id: 1 } }),
-  ]);
+  const [topbar, nav, settings] = isDatabaseConfigured()
+    ? await Promise.all([
+        prisma.topbarMessage.findMany({ orderBy: { order: "asc" } }),
+        prisma.headerNavItem.findMany({ orderBy: { order: "asc" } }),
+        prisma.siteSettings.findUnique({ where: { id: 1 } }),
+      ])
+    : [[], [], null];
 
   return (
     <div className="space-y-8 animate-in fade-in duration-700">

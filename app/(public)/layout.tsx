@@ -2,6 +2,7 @@ import FentyHeader from "../components/FentyHeader";
 import RoyalBridalsFooter from "../components/RoyalBridalsFooter";
 import ChatBot from "../components/ChatBot";
 import prisma from "@/lib/prisma";
+import { isDatabaseConfigured } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
@@ -10,25 +11,31 @@ export default async function PublicLayout({
 }: {
   children: React.ReactNode;
 }) {
-  let topbar: any[] = [];
-  let nav: any[] = [];
-  let settings: any = null;
+  let topbar: { text: string }[] = [];
+  let nav: { name: string; href: string }[] = [];
+  let settings: {
+    logoUrl: string | null;
+    ugFlagUrl: string | null;
+    contactPhone: string | null;
+  } | null = null;
 
-  try {
-    const [topbarData, navData, settingsData] = await Promise.all([
-      (prisma as any).topbarMessage.findMany({ where: { isVisible: true }, orderBy: { order: "asc" } }),
-      (prisma as any).headerNavItem.findMany({ where: { isVisible: true }, orderBy: { order: "asc" } }),
-      (prisma as any).siteSettings.findUnique({ where: { id: 1 } }),
-    ]);
-    topbar = topbarData;
-    nav = navData;
-    settings = settingsData;
-  } catch (error) {
-    console.error("Failed to fetch public layout data:", error);
+  if (isDatabaseConfigured()) {
+    try {
+      const [topbarData, navData, settingsData] = await Promise.all([
+        prisma.topbarMessage.findMany({ where: { isVisible: true }, orderBy: { order: "asc" } }),
+        prisma.headerNavItem.findMany({ where: { isVisible: true }, orderBy: { order: "asc" } }),
+        prisma.siteSettings.findUnique({ where: { id: 1 } }),
+      ]);
+      topbar = topbarData;
+      nav = navData;
+      settings = settingsData;
+    } catch (error) {
+      console.error("Failed to fetch public layout data:", error);
+    }
   }
 
-  const promoMessages = topbar.map((m: any) => m.text);
-  const navLinks = nav.map((n: any) => ({ name: n.name, href: n.href }));
+  const promoMessages = topbar.map((m) => m.text);
+  const navLinks = nav.map((n) => ({ name: n.name, href: n.href }));
 
   return (
     <>
@@ -39,8 +46,8 @@ export default async function PublicLayout({
       />
       {children}
       <ChatBot
-        logoUrl={settings?.logoUrl}
-        phoneNumber={settings?.contactPhone}
+        logoUrl={settings?.logoUrl ?? undefined}
+        phoneNumber={settings?.contactPhone ?? undefined}
       />
       <RoyalBridalsFooter />
     </>

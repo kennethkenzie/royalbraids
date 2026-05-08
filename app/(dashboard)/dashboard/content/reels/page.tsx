@@ -1,20 +1,12 @@
 import React from "react";
 import { Film, Trash2 } from "lucide-react";
-import prisma from "@/lib/prisma";
 import { deleteReel } from "@/lib/actions";
 import { revalidatePath } from "next/cache";
 import ReelsClientWrapper from "@/app/components/ReelsClientWrapper";
-
-async function getReels() {
-  try {
-    return await prisma.$queryRawUnsafe(`SELECT * FROM "Reel" ORDER BY "createdAt" DESC`) as any[];
-  } catch (err) {
-    return [];
-  }
-}
+import { getProductReels } from "@/lib/reels";
 
 export default async function ProductReelsPage() {
-  const reels = await getReels();
+  const reels = await getProductReels();
 
   return (
     <div className="space-y-6">
@@ -29,7 +21,7 @@ export default async function ProductReelsPage() {
               </div>
               <h2 className="text-[20px] font-bold text-black">No Reels Found</h2>
               <p className="mt-2 text-[15px] text-zinc-500">
-                You haven't added any product reels yet. Start by adding a video link.
+                No product reels have been added yet. Start by adding a video link.
               </p>
             </div>
           </div>
@@ -64,5 +56,3 @@ export default async function ProductReelsPage() {
     </div>
   );
 }
-
-

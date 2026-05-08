@@ -608,17 +608,31 @@ export async function updateCategory(id: number, formData: FormData) {
 
 export async function deleteCategory(id: number) {
   try {
-    // Perform cascading delete of products and then the category
+    // Find all products in this category so we can clean up FKs that
+    // don't have onDelete cascade configured (OrderItem, Variation).
+    const products = await prisma.product.findMany({
+      where: { categoryId: id },
+      select: { id: true },
+    });
+    const productIds = products.map((p) => p.id);
+
     await prisma.$transaction([
+      // Detach child categories so they aren't deleted with the parent
       prisma.category.updateMany({
         where: { parentId: id },
         data: { parentId: null },
       }),
-      // First, delete all products associated with this category
+      // Remove dependent rows that block product deletion
+      prisma.orderItem.deleteMany({
+        where: { productId: { in: productIds } },
+      }),
+      prisma.variation.deleteMany({
+        where: { productId: { in: productIds } },
+      }),
+      // ProductUnitOption already cascades on Product delete
       prisma.product.deleteMany({
         where: { categoryId: id },
       }),
-      // Then, delete the category itself
       prisma.category.delete({
         where: { id },
       }),
@@ -629,7 +643,6 @@ export async function deleteCategory(id: number) {
     revalidatePath("/dashboard/products");
     revalidatePath("/products");
     revalidatePath("/inventory");
-    
   } catch (error: any) {
     console.error("PRISMA ERROR (Delete Category):", error);
     throw new Error(error?.message || "Failed to delete category.");

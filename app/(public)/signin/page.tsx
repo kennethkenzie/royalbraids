@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import prisma from "@/lib/prisma";
 import SignInForm from "@/app/components/SignInForm";
 import { Loader2 } from "lucide-react";
+import { isDatabaseConfigured } from "@/lib/db";
 
 export const metadata: Metadata = {
   title: "Sign In",
@@ -17,7 +18,9 @@ export const metadata: Metadata = {
 };
 
 export default async function SigninPage() {
-  const settings = await (prisma as any).siteSettings.findUnique({ where: { id: 1 } });
+  const settings = isDatabaseConfigured()
+    ? await prisma.siteSettings.findUnique({ where: { id: 1 } })
+    : null;
 
   return (
     <Suspense fallback={
@@ -25,7 +28,7 @@ export default async function SigninPage() {
         <Loader2 className="h-8 w-8 animate-spin text-zinc-200" />
       </div>
     }>
-      <SignInForm logoUrl={settings?.logoUrl} />
+      <SignInForm logoUrl={settings?.logoUrl ?? undefined} />
     </Suspense>
   );
 }

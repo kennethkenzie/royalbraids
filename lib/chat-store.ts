@@ -8,66 +8,13 @@ export type StoredChatMessage = {
   channel: string;
 };
 
-type ConversationRow = {
-  id: number;
-  sessionId: string;
-};
-
-const CHAT_TABLE_STATEMENTS = [
-  `
-    CREATE TABLE IF NOT EXISTS "CustomerConversation" (
-      "id" SERIAL PRIMARY KEY,
-      "sessionId" TEXT NOT NULL UNIQUE,
-      "status" TEXT NOT NULL DEFAULT 'OPEN',
-      "customerPhone" TEXT,
-      "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      "latestMessageAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
-    )
-  `,
-  `
-    CREATE TABLE IF NOT EXISTS "CustomerMessage" (
-      "id" SERIAL PRIMARY KEY,
-      "conversationId" INTEGER NOT NULL REFERENCES "CustomerConversation"("id") ON DELETE CASCADE,
-      "sender" TEXT NOT NULL,
-      "channel" TEXT NOT NULL DEFAULT 'WEB',
-      "text" TEXT NOT NULL,
-      "whatsappMessageId" TEXT,
-      "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
-    )
-  `,
-  `
-    CREATE INDEX IF NOT EXISTS "CustomerMessage_conversationId_createdAt_idx"
-    ON "CustomerMessage"("conversationId", "createdAt")
-  `,
-] as const;
-
-let tablesReady = false;
-
-export async function ensureChatTables() {
-  if (tablesReady) return;
-
-  for (const statement of CHAT_TABLE_STATEMENTS) {
-    await (prisma as any).$executeRawUnsafe(statement);
-  }
-  tablesReady = true;
-}
-
 export async function getOrCreateConversation(sessionId: string) {
-  await ensureChatTables();
-
-  const rows = (await (prisma as any).$queryRawUnsafe(
-    `
-      INSERT INTO "CustomerConversation" ("sessionId", "updatedAt", "latestMessageAt")
-      VALUES ($1, NOW(), NOW())
-      ON CONFLICT ("sessionId")
-      DO UPDATE SET "updatedAt" = NOW()
-      RETURNING "id", "sessionId"
-    `,
-    sessionId,
-  )) as ConversationRow[];
-
-  return rows[0];
+  return prisma.customerConversation.upsert({
+    where: { sessionId },
+    update: { updatedAt: new Date() },
+    create: { sessionId },
+    select: { id: true, sessionId: true },
+  });
 }
 
 export async function appendMessage(
@@ -81,63 +28,50 @@ export async function appendMessage(
 ) {
   const conversation = await getOrCreateConversation(sessionId);
 
-  const rows = (await (prisma as any).$queryRawUnsafe(
-    `
-      INSERT INTO "CustomerMessage" (
-        "conversationId",
-        "sender",
-        "channel",
-        "text",
-        "whatsappMessageId",
-        "createdAt"
-      )
-      VALUES ($1, $2, $3, $4, $5, NOW())
-      RETURNING "id", "text", "sender", "channel", "createdAt"
-    `,
-    conversation.id,
-    message.sender,
-    message.channel || "WEB",
-    message.text,
-    message.whatsappMessageId || null,
-  )) as Array<{
-    id: number;
-    text: string;
-    sender: "bot" | "user" | "agent";
-    channel: string;
-    createdAt: Date;
-  }>;
+  const created = await prisma.customerMessage.create({
+    data: {
+      conversationId: conversation.id,
+      sender: message.sender,
+      channel: message.channel || "WEB",
+      text: message.text,
+      whatsappMessageId: message.whatsappMessageId ?? null,
+    },
+    select: {
+      id: true,
+      text: true,
+      sender: true,
+      channel: true,
+      createdAt: true,
+    },
+  });
 
-  await (prisma as any).$executeRawUnsafe(
-    `
-      UPDATE "CustomerConversation"
-      SET "updatedAt" = NOW(), "latestMessageAt" = NOW()
-      WHERE "id" = $1
-    `,
-    conversation.id,
-  );
+  await prisma.customerConversation.update({
+    where: { id: conversation.id },
+    data: { updatedAt: new Date(), latestMessageAt: new Date() },
+  });
 
-  return mapMessage(rows[0]);
+  return mapMessage(created);
 }
 
 export async function listMessages(sessionId: string) {
-  await ensureChatTables();
+  const conversation = await prisma.customerConversation.findUnique({
+    where: { sessionId },
+    select: { id: true },
+  });
 
-  const rows = (await (prisma as any).$queryRawUnsafe(
-    `
-      SELECT m."id", m."text", m."sender", m."channel", m."createdAt"
-      FROM "CustomerMessage" m
-      INNER JOIN "CustomerConversation" c ON c."id" = m."conversationId"
-      WHERE c."sessionId" = $1
-      ORDER BY m."createdAt" ASC, m."id" ASC
-    `,
-    sessionId,
-  )) as Array<{
-    id: number;
-    text: string;
-    sender: "bot" | "user" | "agent";
-    channel: string;
-    createdAt: Date;
-  }>;
+  if (!conversation) return [];
+
+  const rows = await prisma.customerMessage.findMany({
+    where: { conversationId: conversation.id },
+    orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+    select: {
+      id: true,
+      text: true,
+      sender: true,
+      channel: true,
+      createdAt: true,
+    },
+  });
 
   return rows.map(mapMessage);
 }
@@ -160,14 +94,14 @@ export async function ensureWelcomeMessage(sessionId: string) {
 function mapMessage(row: {
   id: number;
   text: string;
-  sender: "bot" | "user" | "agent";
+  sender: string;
   channel: string;
   createdAt: Date;
 }): StoredChatMessage {
   return {
     id: row.id,
     text: row.text,
-    sender: row.sender,
+    sender: row.sender as StoredChatMessage["sender"],
     channel: row.channel,
     time: formatTime(row.createdAt),
   };

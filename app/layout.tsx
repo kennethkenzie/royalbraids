@@ -114,6 +114,7 @@ import CartDrawer from "./components/CartDrawer";
 import ClarityScript from "./components/ClarityScript";
 import GoogleAnalytics from "./components/GoogleAnalytics";
 import prisma from "@/lib/prisma";
+import { isDatabaseConfigured } from "@/lib/db";
 
 export default async function RootLayout({
   children,
@@ -121,10 +122,12 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   let settings = null;
-  try {
-    settings = await (prisma as any).siteSettings.findUnique({ where: { id: 1 } });
-  } catch (error) {
-    console.error("Failed to fetch site settings:", error);
+  if (isDatabaseConfigured()) {
+    try {
+      settings = await prisma.siteSettings.findUnique({ where: { id: 1 } });
+    } catch (error) {
+      console.error("Failed to fetch site settings:", error);
+    }
   }
 
   const organizationJsonLd = {

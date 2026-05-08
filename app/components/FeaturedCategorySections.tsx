@@ -32,6 +32,10 @@ export default async function FeaturedCategorySections() {
 
   if (categories.length === 0) return null;
 
+  const bannerCategories = categories.filter(
+    (c) => c.products.length > 0 && (c as any).featuredBanner,
+  );
+
   return (
     <>
       {categories.map((category, i) => {
@@ -65,7 +69,7 @@ export default async function FeaturedCategorySections() {
 
               <div className="flex flex-col gap-2 md:gap-4">
                 {/* Product Cards — Scrollable */}
-                <div className="scrollbar-hide flex-1 flex snap-x snap-mandatory gap-2 overflow-x-auto pb-10 select-none md:gap-3 cursor-grab active:cursor-grabbing">
+                <div className={`scrollbar-hide flex-1 snap-x snap-mandatory gap-2 overflow-x-auto pb-10 select-none md:gap-3 cursor-grab active:cursor-grabbing ${category.products.length > 5 ? "grid grid-rows-2 grid-flow-col auto-cols-max" : "flex"}`}>
                   {category.products.map((product) => (
                     <Link
                       key={product.id}
@@ -131,20 +135,6 @@ export default async function FeaturedCategorySections() {
                 </div>
               </div>
 
-              {(category as any).featuredBanner && (
-                <div className="mt-8 overflow-hidden rounded-2xl shadow-xl">
-                  <RoyalBraidsHero 
-                    category={{
-                      name: category.name,
-                      description: (category as any).description,
-                      banner: (category as any).featuredBanner,
-                      circleColor: (category as any).circleColor,
-                      backgroundColor: (category as any).backgroundColor,
-                    }} 
-                  />
-                </div>
-              )}
-
               {/* Progress bar */}
               <div className="relative mt-2 h-[3px] w-full overflow-hidden bg-black/10">
                 <div className="absolute left-0 top-0 h-full w-[40%] bg-black" />
@@ -153,6 +143,34 @@ export default async function FeaturedCategorySections() {
           </section>
         );
       })}
+
+      {bannerCategories.length > 0 && (
+        <section className="w-full bg-white px-0 py-0">
+          <div
+            className={`grid gap-0 ${
+              bannerCategories.length === 1
+                ? "grid-cols-1"
+                : bannerCategories.length === 2
+                  ? "grid-cols-1 md:grid-cols-2"
+                  : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+            }`}
+          >
+            {bannerCategories.map((category) => (
+              <div key={category.id} className="w-full overflow-hidden">
+                <RoyalBraidsHero
+                  category={{
+                    name: category.name,
+                    description: (category as any).description,
+                    banner: (category as any).featuredBanner,
+                    circleColor: (category as any).circleColor,
+                    backgroundColor: (category as any).backgroundColor,
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
     </>
   );
 }
