@@ -1,11 +1,12 @@
 import prisma from "@/lib/prisma";
 import { updateCategory } from "@/lib/actions";
 import Link from "next/link";
-import { ArrowLeft, Image } from "lucide-react";
+import { ArrowLeft, CheckCircle2 } from "lucide-react";
 import { notFound, redirect } from "next/navigation";
 import CategoryBannerField from "@/app/components/CategoryBannerField";
 import CategoryCircleImageField from "@/app/components/CategoryCircleImageField";
 import CategoryColorField from "@/app/components/CategoryColorField";
+import SaveChangesButton from "@/app/components/SaveChangesButton";
 
 export const dynamic = "force-dynamic";
 
@@ -14,7 +15,7 @@ export default async function EditCategoryPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams?: Promise<{ error?: string }>;
+  searchParams?: Promise<{ error?: string; success?: string }>;
 }) {
   const { id: idParam } = await params;
   const resolvedSearchParams = await searchParams;
@@ -50,9 +51,14 @@ export default async function EditCategoryPage({
     try {
       await updateCategory(id, formData);
     } catch (error: any) {
-      const message = encodeURIComponent(error?.message || "Failed to update category.");
+      // next/navigation's redirect throws a special error we must re-throw
+      if (error?.digest?.startsWith?.("NEXT_REDIRECT")) throw error;
+      const message = encodeURIComponent(
+        error?.message || "Failed to update category.",
+      );
       redirect(`/dashboard/products/category/${id}/edit?error=${message}`);
     }
+    redirect(`/dashboard/products/category/${id}/edit?success=1`);
   }
 
   return (
@@ -81,6 +87,12 @@ export default async function EditCategoryPage({
             {resolvedSearchParams?.error ? (
               <div className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-[13px] text-red-600">
                 {resolvedSearchParams.error}
+              </div>
+            ) : null}
+            {resolvedSearchParams?.success ? (
+              <div className="flex items-center gap-2 rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-[13px] font-medium text-emerald-700">
+                <CheckCircle2 className="h-4 w-4" />
+                Category saved successfully.
               </div>
             ) : null}
             <div>
@@ -178,12 +190,7 @@ export default async function EditCategoryPage({
               </div>
             </div>
 
-            <button
-              type="submit"
-              className="w-full h-11 rounded-xl bg-black text-[14px] font-medium text-white hover:bg-zinc-800 transition-all"
-            >
-              Save Changes
-            </button>
+            <SaveChangesButton />
           </form>
         </div>
 
